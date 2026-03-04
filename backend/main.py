@@ -1,6 +1,4 @@
 from fastapi import FastAPI
-from config.db import engine
-import models
 
 app = FastAPI()
 

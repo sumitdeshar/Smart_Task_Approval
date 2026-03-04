@@ -7,15 +7,27 @@ import os
 
 load_dotenv()
 
+print("os.getenv('DB_USERNAME') =", os.getenv("DB_USERNAME")) 
+print("os.getenv('DB_PASSWORD') =", os.getenv("DB_PASSWORD"))
+print("os.getenv('DB_NAME') =", os.getenv("DB_NAME"))
+print("os.getenv('DB_PORT') =", os.getenv("DB_PORT"))
+print("os.getenv('DB_HOST') =", os.getenv("DB_HOST"))
+print("Environment variables loaded successfully.")
+
+
 username = os.getenv("DB_USERNAME")
 password = os.getenv("DB_PASSWORD")
 dbname = os.getenv("DB_NAME")
 db_port = os.getenv("DB_PORT")
 db_host = os.getenv("DB_HOST")
 
+
+
 DATABASE_URL = (
     f"postgresql+asyncpg://{username}:{password}@{db_host}:{db_port}/{dbname}"
 )
+
+print("DATABASE_URL =", DATABASE_URL)
 
 engine = create_async_engine(
     DATABASE_URL,
