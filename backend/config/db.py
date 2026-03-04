@@ -7,19 +7,19 @@ import os
 
 load_dotenv()
 
-print("os.getenv('DB_USERNAME') =", os.getenv("DB_USERNAME")) 
-print("os.getenv('DB_PASSWORD') =", os.getenv("DB_PASSWORD"))
-print("os.getenv('DB_NAME') =", os.getenv("DB_NAME"))
-print("os.getenv('DB_PORT') =", os.getenv("DB_PORT"))
-print("os.getenv('DB_HOST') =", os.getenv("DB_HOST"))
-print("Environment variables loaded successfully.")
+# print("os.getenv('DB_USERNAME') =", os.getenv("DB_USERNAME")) 
+# print("os.getenv('DB_PASSWORD') =", os.getenv("DB_PASSWORD"))
+# print("os.getenv('DB_NAME') =", os.getenv("DB_NAME"))
+# print("os.getenv('DB_PORT') =", os.getenv("DB_PORT"))
+# print("os.getenv('DB_HOST') =", os.getenv("DB_HOST"))
+# print("Environment variables loaded successfully.")
 
 
-username = os.getenv("DB_USERNAME")
-password = os.getenv("DB_PASSWORD")
-dbname = os.getenv("DB_NAME")
-db_port = os.getenv("DB_PORT")
-db_host = os.getenv("DB_HOST")
+username = os.getenv("POSTGRES_USER")
+password = os.getenv("POSTGRES_PASSWORD")
+dbname = os.getenv("POSTGRES_DB")
+db_port = os.getenv("POSTGRES_PORT")
+db_host = os.getenv("POSTGRES_HOST")
 
 
 
@@ -36,7 +36,7 @@ engine = create_async_engine(
     max_overflow=10
 )
 
-async def init_db():
+async def create_tables():
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
