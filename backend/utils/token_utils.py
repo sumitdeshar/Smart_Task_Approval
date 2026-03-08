@@ -5,10 +5,10 @@ import os
 #use this to generate secrect key on your terminal
 # import secrets
 # SECRET_KEY = secrets.token_hex(32)
+# print('secrect key:', SECRET_KEY)
 
-SECRET_KEY = os.getenv("SECRET_KEY", "sdfsd")
-print('secrect key:', SECRET_KEY)
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY", "aa") # second parameter is random string to make it so that secret key is never null
+ALGORITHM = os.getenv("ALGORITHM", "aa")
 # ACCESS_TOKEN_EXPIRE_MINUTES = 7
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 

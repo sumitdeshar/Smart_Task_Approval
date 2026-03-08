@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from config.db import create_tables
+from configs.db import create_tables
 from routes.user import user_router as user
 import os
 

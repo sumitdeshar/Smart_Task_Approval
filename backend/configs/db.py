@@ -27,7 +27,7 @@ DATABASE_URL = (
     f"postgresql+asyncpg://{username}:{password}@{db_host}:{db_port}/{dbname}"
 )
 
-print("DATABASE_URL =", DATABASE_URL)
+# print("DATABASE_URL =", DATABASE_URL)
 
 engine = create_async_engine(
     DATABASE_URL,
@@ -57,7 +57,7 @@ async def get_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 
-
+#for sync db connection 
 # from sqlalchemy import create_engine
 # from sqlalchemy.orm import sessionmaker
 # import os

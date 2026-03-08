@@ -1,8 +1,10 @@
-from models.user import User
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession 
 from sqlalchemy import select
-from config.db import get_session
+
+from configs.db import get_session
+from models.user_model import User
+from schemas.user_schema import UserCreate
 
 user_router = APIRouter()
 
@@ -12,7 +14,7 @@ async def get_users(session: AsyncSession = Depends(get_session)):
     users = result.scalars().all()
     return users
 
-@user_router.get("/users/{user_id}")
+@user_router.get("/user/{user_id}")
 async def get_user_by_id(user_id: int, sessions: AsyncSession = Depends(get_session)):
     result = await sessions.execute(select.where(User.id == user_id))
     user = result.scalars().all()
@@ -22,19 +24,29 @@ async def get_user_by_id(user_id: int, sessions: AsyncSession = Depends(get_sess
     return user
     
 
-@user_router.post("/users")
-async def create_user(user: User, session: AsyncSession = Depends(get_session)):
-    if user.roles is None:
-        user.roles = "user"
-    if user.email is None:
-        user.email = f"{user.name.lower()}@example.com"
-    if user.name is None:
-        user.name = "Unnamed User"
+@user_router.post("/user")
+async def create_user(input: UserCreate, sessions: AsyncSession = Depends(get_session)):
+    print('input',input.email)
+    result = await sessions.execute(select(User))
+    user = result.first()
+    print(user)
     
-    session.add(user)
-    await session.commit()
-    await session.refresh(user)
-    return user
+    # statement = select(User).where(User.email == input.email)
+    # result = await sessions.execute(statement)
+    # user = result.first()
+    print('input data', input)
+    
+    # session.add(user)
+    # await session.commit()
+    # await session.refresh(user)
+    return 
+
+#SQLModel tips
+# SQLModel internally automatically does scalars().
+
+# So: no scalars are needed
+
+# exec() = execute() + scalars()
 
 # Available Methods:
 # scalar() - First row, first column
