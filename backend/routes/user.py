@@ -31,9 +31,9 @@ async def create_user(input: UserCreate, sessions: AsyncSession = Depends(get_se
     user = result.first()
     print(user)
     
-    # statement = select(User).where(User.email == input.email)
-    # result = await sessions.execute(statement)
-    # user = result.first()
+    statement = select(User).where(User.email == input.email)
+    result = await sessions.execute(statement)
+    user = result.first()
     print('input data', input)
     
     # session.add(user)
