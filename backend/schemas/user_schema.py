@@ -1,12 +1,18 @@
 from sqlmodel import SQLModel
+from typing import Optional
 
 class UserBase(SQLModel):
     email: str
-    full_name: str
+    name: str
     
 class UserCreate(UserBase):
     password: str
     
-class UserRead(UserBase):
+class UserLogin(UserCreate):
+    name : Optional[str]
+    
+class UserResponseRegister(UserBase):
     id: str
-    roles: str
+
+    class Config:
+        from_attributes = True

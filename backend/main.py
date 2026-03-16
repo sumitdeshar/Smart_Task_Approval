@@ -1,10 +1,12 @@
 from fastapi import FastAPI
 from configs.db import create_tables
 from routes.user import user_router as user
+from routes.authentication import auth
 import os
 
 app = FastAPI()
 app.include_router(user)
+app.include_router(auth)
 
 #starup actions
 @app.on_event("startup")

@@ -4,7 +4,6 @@ from sqlalchemy import select
 
 from configs.db import get_session
 from models.user_model import User
-from schemas.user_schema import UserCreate
 
 user_router = APIRouter()
 
@@ -15,8 +14,8 @@ async def get_users(session: AsyncSession = Depends(get_session)):
     return users
 
 @user_router.get("/user/{user_id}")
-async def get_user_by_id(user_id: int, sessions: AsyncSession = Depends(get_session)):
-    result = await sessions.execute(select.where(User.id == user_id))
+async def get_user_by_id(user_id: int, session: AsyncSession = Depends(get_session)):
+    result = await session.execute(select.where(User.id == user_id))
     user = result.scalars().all()
     print(user)
     if user is None:
@@ -24,22 +23,8 @@ async def get_user_by_id(user_id: int, sessions: AsyncSession = Depends(get_sess
     return user
     
 
-@user_router.post("/user")
-async def create_user(input: UserCreate, sessions: AsyncSession = Depends(get_session)):
-    print('input',input.email)
-    result = await sessions.execute(select(User))
-    user = result.first()
-    print(user)
-    
-    statement = select(User).where(User.email == input.email)
-    result = await sessions.execute(statement)
-    user = result.first()
-    print('input data', input)
-    
-    # session.add(user)
-    # await session.commit()
-    # await session.refresh(user)
-    return 
+
+
 
 #SQLModel tips
 # SQLModel internally automatically does scalars().

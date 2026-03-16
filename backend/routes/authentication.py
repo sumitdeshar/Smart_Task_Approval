@@ -1,81 +1,64 @@
-# from fastapi import APIRouter, Depends, HTTPException, status
-# from utils.hashing import Hash
-# from utils import token_utils
-# from models.user import User
-# from configs.db import get_session
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession 
+from uuid import uuid4
+from sqlalchemy.exc import IntegrityError
+from sqlmodel import or_, select
 
-# from sqlmodel import or_, select
-# from sqlmodel.ext.asyncio.session import AsyncSession
+from configs.db import get_session
+from models.user_model import User
+from schemas.user_schema import UserCreate, UserLogin, UserResponseRegister
+from utils.hashing import Hash
+from utils import token_utils as token
 
-# import uuid
-
-# router = APIRouter(prefix="/auth", tags=["Authentication"])
-
-
-# @router.post("/signup", response_model=UserOut)
-# async def register_user(request: UserIn, session: AsyncSession = Depends(get_session)):
-#     # Check if email exists
-#     existing_user = await session.exec(
-#         select(User).where(User.email == request.email)
-#     )
+auth = APIRouter(prefix="/auth", tags=["Authentication"])
     
-#     if existing_user:
-#         raise HTTPException(
-#             status_code=status.HTTP_400_BAD_REQUEST,
-#             detail="Email already registered"
-#         )
+@auth.post("/register", response_model=UserResponseRegister)
+async def register(request: UserCreate, session: AsyncSession = Depends(get_session)):
     
-#     new_user = User(
-#         id=str(uuid.uuid4()),
-#         name=request.name,
-#         email=request.email,
-#         password=Hash.bcrypt(request.password),
-#     )
+    new_user = User(
+        id=str(uuid4()),
+        name=request.name,
+        email=request.email,
+        password=Hash.bcrypt(request.password),
+    )
     
-#     session.add(new_user)
-#     await session.commit()
-#     await session.refresh(new_user)
-#     await session.close()
-#     return new_user
+    session.add(new_user)
+    try:
+        await session.commit()
+        await session.refresh(new_user)
+    except IntegrityError:
+        await session.rollback()
+        return {"msg": "Email already used"}
+    return new_user
 
+@auth.post("/login" )
+async def login(request: UserLogin, session: AsyncSession = Depends(get_session)):
+    try:
+        res = await session.execute(
+            select(User).where(
+                    User.email == request.email,
+            )
+        )
+        user = res.scalar_one_or_none()
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Give correct username or password"
+            )
+        
+        if not Hash.verify(user.password, request.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Incorrect password"
+            )
 
-# @router.post("/login")
-# async def login(request: UserLogin, session: AsyncSession = Depends(get_session)):
-#     try:
-#         res = await session.execute(
-#             select(User).where(
-#                 or_(
-#                     User.email == request.username_or_email,
-#                     User.name == request.username_or_email
-#                     )
-#                 )
-#             )
-#         user =res.scalar_one()
-#         print("User fetched:", user)
-        
-#         if not user:
-#             raise HTTPException(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 detail="Invalid credentials"
-#             )
-            
-#         if not Hash.verify(user.password, request.password):
-#             raise HTTPException(
-#                 status_code=status.HTTP_401_UNAUTHORIZED,
-#                 detail="Invalid credentials"
-#             )
-
-#         access_token = token_utils.create_access_token(data={"sub": user.id})
-#         print(f'access_token', access_token)   
-#         return {"access_token": access_token, "token_type": "bearer"}
-        
-#     except HTTPException:
-#         raise
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-#             detail="Login failed"
-#         )
-#     finally:
-#         await session.close()
-        
+        access_token = token.create_access_token(data={"sub": user.id})
+        print(f'access_token', access_token)   
+        return {"token":{"access_token": access_token, "token_type": "bearer"},
+                "data": UserResponseRegister.from_orm(user)}
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Login failed: {str(e)}"
+        )
