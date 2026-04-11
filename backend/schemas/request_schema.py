@@ -6,4 +6,4 @@ class RequestBase(SQLModel):
     data: Optional[dict] = None
     
 class LogoutRequest(SQLModel):
-    refresh_token: Optional[str] = None
+    access_token: Optional[str] = None

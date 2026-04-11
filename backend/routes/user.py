@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi import status
 from sqlalchemy.ext.asyncio import AsyncSession 
 from sqlalchemy import select
 
@@ -13,18 +14,14 @@ async def get_users(session: AsyncSession = Depends(get_session)):
     users = result.scalars().all()
     return users
 
-@user_router.get("/user/{user_id}")
-async def get_user_by_id(user_id: int, session: AsyncSession = Depends(get_session)):
-    result = await session.execute(select.where(User.id == user_id))
-    user = result.scalars().all()
-    print(user)
-    if user is None:
-        return {"msg": "user by this id is not present"}
-    return user
+# @user_router.get("/user/{user_id}")
+# async def get_user_by_id(user_id: str, session: AsyncSession = Depends(get_session)):
+#     result = await session.execute(select(User).where(User.id == user_id))
+#     user = result.scalar_one_or_none()
+#     if not user:
+#         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
+#     return user
     
-
-
-
 
 #SQLModel tips
 # SQLModel internally automatically does scalars().

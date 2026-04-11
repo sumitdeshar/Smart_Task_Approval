@@ -1,21 +1,26 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
-from jose import JWTError
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession 
-from uuid import uuid4
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import or_, select
+from uuid import uuid4
+from jose import JWTError
 
 from configs.db import get_session
 from models.user_model import User
 from schemas.request_schema import LogoutRequest
 from schemas.user_schema import UserCreate, UserLogin, UserResponseRegister
+
 from utils.hashing import Hash
 from utils import token_utils as token
+from utils.token_auth import verify_access_token, oauth2_scheme
+from utils import blacklist_token
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
     
-@auth.post("/register", response_model=UserResponseRegister)
+@auth.post("/register" )
 async def register(request: UserCreate, session: AsyncSession = Depends(get_session)):
+    data = {}
     
     new_user = User(
         id=str(uuid4()),
@@ -30,40 +35,46 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
         await session.refresh(new_user)
     except IntegrityError:
         await session.rollback()
-        return {"msg": "Email already used"}
-    return new_user
+        data["msg"] = "Email already used"
+        return data
+    data['msg'] = "User Created Successfully"
+    return data
 
+    
 @auth.post("/login" )
-async def login(request: UserLogin, session: AsyncSession = Depends(get_session)):
+async def login(
+    request: OAuth2PasswordRequestForm = Depends(),
+    session: AsyncSession = Depends(get_session)
+):
+    data = {}
     try:
         res = await session.execute(
             select(User).where(
-                    User.email == request.email,
+                    User.email == request.username,
             )
         )
-        user = res.scalar_one_or_none()
-        if not user:
+        user = res.scalars().one_or_none()
+
+        if not user or not Hash.verify(user.password, request.password):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Give correct username or password"
+                detail="Incorrect email or password"
             )
-        
-        if not Hash.verify(user.password, request.password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect password"
-            )
+            
+        data["user"] = UserResponseRegister.from_orm(user)
+
 
         access_token = token.create_access_token(data={"sub": user.id})
-        print(f'access_token', access_token)   
-        refresh_token = token.create_refresh_token(data={'sub': user.id})
-        print(f'resfresh_token', refresh_token)   
+        refresh_token = token.create_refresh_token(data={"sub": user.id})
+        # print(f'access_token', access_token)   
+        # print(f'resfresh_token', refresh_token)
+        
         return {
-            "token":{"access_token": access_token, 
-                "token_type": "bearer",
-                "refresh_token": refresh_token
-                },
-            "data": UserResponseRegister.from_orm(user)}
+            "access_token": access_token,
+            "token_type": "bearer",
+            "refresh_token": refresh_token,
+            "user": UserResponseRegister.from_orm(user)
+        }
     
     except Exception as e:
         raise HTTPException(
@@ -71,21 +82,45 @@ async def login(request: UserLogin, session: AsyncSession = Depends(get_session)
             detail=f"Login failed: {str(e)}"
         )
 
+
 @auth.post("/logout")
-async def logout(request: Request):
-    auth_header = request.headers.get("Authorization")
+async def logout(
+    request: LogoutRequest,
+    token_str: str = Depends(oauth2_scheme)
+):
 
-    if not auth_header:
-        raise HTTPException(
-            status_code=401,
-            detail="Authorization header missing"
-        )
+    payload = token.decode_token(token_str)
+    jti = payload.get("jti")
+    
+    if not jti:
+        raise HTTPException(status_code=400, detail="Invalid token payload")
+    
+    blacklist_token.blacklist_token(jti)
 
-    try:
-        token_str = auth_header.split(" ")[1]
-        print("token_dict",token_str)
-        # payload= token.blacklist_token(token_str)
-        return {"msg": "Logged out successfully"}
+    if request.access_token:
+        try:
+            access_payload = token.decode_token(request.access_token)
+            access_jti = access_payload.get("jti")
+            if access_jti:
+                blacklist_token.blacklist_token(access_jti)
+        except JWTError:
+            pass  # Ignore invalid refresh token
 
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"msg": "Logged out successfully"}
+
+
+@auth.delete("/user/{user_id}")
+async def delete_user(
+    user_id: str,
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(select(User).where(User.id == user_id))
+    user = result.scalars().one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    await session.delete(user)
+    await session.commit()
+    return {"msg": f"User {user.email} deleted successfully"}
+

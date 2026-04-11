@@ -5,6 +5,7 @@ from routes.authentication import auth
 import os
 
 app = FastAPI()
+
 app.include_router(user)
 app.include_router(auth)
 
