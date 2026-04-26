@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Request
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Request, Cookie
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession 
 from sqlalchemy.exc import IntegrityError
@@ -9,12 +9,11 @@ from jose import JWTError
 from configs.db import get_session
 from models.user_model import User
 from schemas.request_schema import LogoutRequest
-from schemas.user_schema import UserCreate, UserLogin, UserResponseRegister
+from schemas.user_schema import UserCreate, UserResponseRegister
 
 from utils.hashing import Hash
 from utils.token import token_utils as token
-from utils.token.token_auth import verify_access_token, oauth2_scheme
-from utils.token import blacklist_token
+from utils.token.token_auth import oauth2_scheme, verify_refresh_token
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
     
@@ -43,6 +42,7 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
     
 @auth.post("/login" )
 async def login(
+    response: Response,
     request: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session)
 ):
@@ -68,11 +68,18 @@ async def login(
         refresh_token = token.create_refresh_token(data={"sub": user.id})
         # print(f'access_token', access_token)   
         # print(f'resfresh_token', refresh_token)
-
+        response.set_cookie(
+            key="refresh_token",
+            value=refresh_token,
+            httponly=True,       # JS cannot read this
+            secure=True,         # HTTPS only (set False for local dev)
+            samesite="lax",      # CSRF protection
+            max_age=60 * 60 * 24 * 7  # 7 days in seconds
+        )
+            
         return {
             "access_token": access_token,
             "token_type": "bearer",
-            "refresh_token": refresh_token,
             "user": UserResponseRegister.from_orm(user)
         }
     
@@ -83,6 +90,15 @@ async def login(
         )
 
 
+@auth.post("/refresh")
+async def refresh(
+    response: Response,
+    user_id: int = Depends(verify_refresh_token)
+):
+    new_access_token = token.create_access_token(data={"sub": user_id})
+    return {"access_token": new_access_token}
+
+
 @auth.post("/logout")
 async def logout(
     request: LogoutRequest,
@@ -91,19 +107,3 @@ async def logout(
     user_id = token.verify_token(token_str, credentials_exception= "sad")
     print(user_id)
     return {"msg": "Logged out successfully"}
-
-
-@auth.delete("/user/{user_id}")
-async def delete_user(
-    user_id: str,
-    session: AsyncSession = Depends(get_session)
-):
-    result = await session.execute(select(User).where(User.id == user_id))
-    user = result.scalars().one_or_none()
-
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    await session.delete(user)
-    await session.commit()
-    return {"msg": f"User {user.email} deleted successfully"}
