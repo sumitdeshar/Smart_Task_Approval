@@ -1,0 +1,35 @@
+services:
+  db:
+    image: postgres:16
+    container_name: smart_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres_user
+      POSTGRES_PASSWORD: humble123
+      POSTGRES_DB: smart_DB
+    ports:
+      - "5432:5432"
+    volumes:
+      - smart_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres_user -d smart_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build: .
+    container_name: smart_app
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy # ← waits until postgres passes healthcheck
+    volumes:
+      - .:/app
+
+volumes:
+  smart_pg_data:

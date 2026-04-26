@@ -2,9 +2,8 @@ from sqlmodel import SQLModel
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 
-from dotenv import load_dotenv
 import os
-
+from dotenv import load_dotenv
 load_dotenv()
 
 # print("os.getenv('DB_USERNAME') =", os.getenv("DB_USERNAME")) 

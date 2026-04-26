@@ -64,7 +64,7 @@ async def login(
         data["user"] = UserResponseRegister.from_orm(user)
 
 
-        access_token = token.create_access_token(data={"sub": user.id})
+        access_token = token.create_access_token(data={"sub": user.id, "role": user.role})
         refresh_token = token.create_refresh_token(data={"sub": user.id})
         # print(f'access_token', access_token)   
         # print(f'resfresh_token', refresh_token)

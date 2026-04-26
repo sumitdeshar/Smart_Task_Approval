@@ -18,8 +18,11 @@ def create_access_token(data: dict):
     to_encode.update({
         "exp": expire,
         "type": "access",
-        "jti": str(uuid4())
+        "jti": str(uuid4()),
+        "sub": user.id,
+        "role": user.role
     })
+
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 def create_refresh_token(data: dict):
