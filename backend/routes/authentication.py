@@ -12,9 +12,9 @@ from schemas.request_schema import LogoutRequest
 from schemas.user_schema import UserCreate, UserLogin, UserResponseRegister
 
 from utils.hashing import Hash
-from utils import token_utils as token
-from utils.token_auth import verify_access_token, oauth2_scheme
-from utils import blacklist_token
+from utils.token import token_utils as token
+from utils.token.token_auth import verify_access_token, oauth2_scheme
+from utils.token import blacklist_token
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
     
@@ -68,7 +68,7 @@ async def login(
         refresh_token = token.create_refresh_token(data={"sub": user.id})
         # print(f'access_token', access_token)   
         # print(f'resfresh_token', refresh_token)
-        
+
         return {
             "access_token": access_token,
             "token_type": "bearer",
@@ -88,24 +88,8 @@ async def logout(
     request: LogoutRequest,
     token_str: str = Depends(oauth2_scheme)
 ):
-
-    payload = token.decode_token(token_str)
-    jti = payload.get("jti")
-    
-    if not jti:
-        raise HTTPException(status_code=400, detail="Invalid token payload")
-    
-    blacklist_token.blacklist_token(jti)
-
-    if request.access_token:
-        try:
-            access_payload = token.decode_token(request.access_token)
-            access_jti = access_payload.get("jti")
-            if access_jti:
-                blacklist_token.blacklist_token(access_jti)
-        except JWTError:
-            pass  # Ignore invalid refresh token
-
+    user_id = token.verify_token(token_str, credentials_exception= "sad")
+    print(user_id)
     return {"msg": "Logged out successfully"}
 
 
@@ -123,4 +107,3 @@ async def delete_user(
     await session.delete(user)
     await session.commit()
     return {"msg": f"User {user.email} deleted successfully"}
-

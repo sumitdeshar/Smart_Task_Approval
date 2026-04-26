@@ -1,7 +1,7 @@
 from fastapi import HTTPException, status, Header, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from typing import Optional
-from utils import token_utils
+from utils.token import token_utils
 from jose import JWTError
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
@@ -20,7 +20,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 #     user_id = token_utils.verify_token(token_str, credentials_exception)
 #     return user_id
 
-def verify_access_token(token_str: str = Depends(oauth2_scheme)):
+def verify_access_token(
+    request: Request,
+    token_str: str = Depends(oauth2_scheme)
+    ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",

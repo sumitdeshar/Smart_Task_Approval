@@ -2,12 +2,15 @@ from fastapi import FastAPI
 from configs.db import create_tables
 from routes.user import user_router as user
 from routes.authentication import auth
+# from middleware.api_logger import APILoggerMiddleware
 import os
 
 app = FastAPI()
 
 app.include_router(user)
 app.include_router(auth)
+
+# app.add_middleware(APILoggerMiddleware)
 
 #starup actions
 @app.on_event("startup")
@@ -17,7 +20,7 @@ async def on_startup():
 @app.get("/")
 def read_root():
     SECRET_KEY = os.getenv("SECRET_KEY")
-    print('secrect key:', SECRET_KEY)
+    # print('secrect key:', SECRET_KEY)
     return {"message": "Hello from Smart Track"}
 
 

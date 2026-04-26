@@ -40,3 +40,28 @@ class Leave(SQLModel, table=True):
 
     # Relationship back to user
     user: User = Relationship(back_populates="leaves")
+    
+class UserSession(SQLModel, table=True):
+
+    id:         str      = Field(default=None, primary_key=True)
+    user_id:    str      = Field(foreign_key="user.id", index=True)
+    started_at: datetime = Field(default_factory=datetime.utcnow)
+    ended_at:   Optional[datetime] = Field(default=None)
+    ip_address: Optional[str]      = Field(default=None)
+
+    logs: list["APILog"] = Relationship(back_populates="session")
+
+class APILog(SQLModel, table=True):
+
+    id:          Optional[str] = Field(default=None, primary_key=True)
+    session_id:  Optional[str] = Field(foreign_key="usersession.id", default=None)
+    user_id:     Optional[str] = Field(default=None, index=True)
+    method:      str
+    path:        str
+    status_code: int
+    duration_ms: int
+    timestamp:   datetime = Field(default_factory=datetime.utcnow)
+
+    session: Optional[UserSession] = Relationship(back_populates="logs")
+    
+    
