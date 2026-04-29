@@ -19,8 +19,8 @@ def create_access_token(data: dict):
         "exp": expire,
         "type": "access",
         "jti": str(uuid4()),
-        "sub": user.id,
-        "role": user.role
+        "sub": data['sub'],
+        "role": data['role']
     })
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)

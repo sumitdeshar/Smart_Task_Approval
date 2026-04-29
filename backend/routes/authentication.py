@@ -3,8 +3,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession 
 from sqlalchemy.exc import IntegrityError
 from sqlmodel import or_, select
-from uuid import uuid4
-from jose import JWTError
 
 from configs.db import get_session
 from models.user_model import User
@@ -22,7 +20,6 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
     data = {}
     
     new_user = User(
-        id=str(uuid4()),
         name=request.name,
         email=request.email,
         password=Hash.bcrypt(request.password),
@@ -40,55 +37,78 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
     return data
 
     
-@auth.post("/login" )
+from sqlalchemy import or_
+from fastapi import HTTPException, status
+
+@auth.post("/login")
 async def login(
     response: Response,
     request: OAuth2PasswordRequestForm = Depends(),
     session: AsyncSession = Depends(get_session)
 ):
-    data = {}
-    try:
-        res = await session.execute(
-            select(User).where(
-                    User.email == request.username,
+    identifier = request.username
+
+    if not identifier:
+        raise HTTPException(status_code=400, detail="Username/email required")
+
+    res = await session.execute(
+        select(User).where(
+            or_(
+                User.email == identifier, # pyright: ignore[reportArgumentType]
+                User.name == identifier # pyright: ignore[reportArgumentType]
             )
         )
-        user = res.scalars().one_or_none()
+    )
 
-        if not user or not Hash.verify(user.password, request.password):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email or password"
-            )
-            
-        data["user"] = UserResponseRegister.from_orm(user)
+    user = res.scalars().one_or_none()
 
 
-        access_token = token.create_access_token(data={"sub": user.id, "role": user.role})
-        refresh_token = token.create_refresh_token(data={"sub": user.id})
-        # print(f'access_token', access_token)   
-        # print(f'resfresh_token', refresh_token)
-        response.set_cookie(
-            key="refresh_token",
-            value=refresh_token,
-            httponly=True,       # JS cannot read this
-            secure=True,         # HTTPS only (set False for local dev)
-            samesite="lax",      # CSRF protection
-            max_age=60 * 60 * 24 * 7  # 7 days in seconds
-        )
-            
-        return {
-            "access_token": access_token,
-            "token_type": "bearer",
-            "user": UserResponseRegister.from_orm(user)
-        }
-    
-    except Exception as e:
+    if not user or not Hash.verify(user.password, request.password):
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Login failed: {str(e)}"
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect email/username or password"
         )
 
+    try:
+        access_token = token.create_access_token(
+            data={"sub": str(user.id), "role": user.role}
+        )
+
+        refresh_token = token.create_refresh_token(
+            data={"sub": str(user.id)}
+        )
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Token generation failed"
+        )
+
+    response.set_cookie(
+        key="refresh_token",
+        value=refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 7
+    )
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponseRegister.model_validate(user)
+    }
+
+@auth.get("/check-cookie")
+async def check_cookie(request: Request):
+    refresh_token = request.cookies.get("refresh_token")
+
+    if not refresh_token:
+        return {"message": "No cookie received"}
+
+    return {
+        "message": "Cookie received",
+        "token": refresh_token
+    }
 
 @auth.post("/refresh")
 async def refresh(

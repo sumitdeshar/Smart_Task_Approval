@@ -1,9 +1,11 @@
 from sqlmodel import SQLModel
-from typing import Optional
+from typing import Optional, List
 
 class UserBase(SQLModel):
     email: str
     name: str
+    class Config:
+        from_attributes = True
     
 class UserCreate(UserBase):
     password: str
