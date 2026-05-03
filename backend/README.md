@@ -43,14 +43,14 @@ The Leave Management System allows employees to apply for leave through a struct
 
 > _(Update this section to match your actual stack)_
 
-| Layer     | Technology           |
-| --------- | -------------------- |
-| Runtime   | Node.js / Python     |
-| Framework | Express / FastAPI    |
-| Auth      | OAuth 2.0 + JWT      |
-| Database  | PostgreSQL / MongoDB |
-| ORM       | Prisma / Mongoose    |
-| Testing   | Jest / Pytest        |
+| Layer     | Technology      |
+| --------- | --------------- |
+| Runtime   | Python          |
+| Framework | FastAPI         |
+| Auth      | OAuth 2.0 + JWT |
+| Database  | PostgreSQL      |
+| ORM       | SQLAlchemy      |
+| Testing   | Pytest          |
 
 ---
 
@@ -73,6 +73,90 @@ The Leave Management System allows employees to apply for leave through a struct
                                      └──────────────────┘
 ```
 
+Multi-Protocol API Design (Learning Extension)
+🧩 API Paradigms Used
+Type Purpose Use Case
+REST CRUD operations Users, Leaves, Payroll
+WebSocket Real-time updates Notifications, status updates
+GraphQL Flexible queries Dashboard, aggregated data
+gRPC Internal communication Service-to-service calls
+SOAP Legacy simulation External HR integration
+⚡ WebSocket (Real-Time)
+Notify employee when leave is approved/revoked
+Notify manager of new leave request
+Optional chat system
+
+Example:
+
+{
+"event": "LEAVE_APPROVED",
+"data": {
+"leaveId": "123",
+"status": "APPROVED"
+}
+}
+🔍 GraphQL API
+
+Endpoint:
+
+/api/graphql
+
+Example:
+
+query {
+user {
+name
+role
+leaves {
+status
+startDate
+endDate
+}
+}
+}
+🚀 gRPC (Internal Services)
+Auth Service → JWT validation
+Leave Service → business logic
+Payroll Service → salary calculation
+
+Flow:
+
+Leave Service → Auth Service (verify role)
+Leave Service → Payroll Service (update salary)
+🏛️ SOAP (Legacy Simulation)
+
+Example XML:
+
+<LeaveRequest>
+  <EmployeeId>123</EmployeeId>
+  <StartDate>2026-05-01</StartDate>
+  <EndDate>2026-05-05</EndDate>
+  <Status>APPROVED</Status>
+</LeaveRequest>
+🏗️ Extended Architecture
+                ┌─────────────┐
+                │   Client    │
+                └──────┬──────┘
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+     REST API      GraphQL API   WebSocket Server
+        │              │              │
+        └──────┬───────┴───────┬──────┘
+               │               │
+        ┌──────▼──────┐  ┌─────▼──────┐
+        │Leave Service│  │Auth Service│
+        └──────┬──────┘  └─────┬──────┘
+               │               │
+               └──────┬────────┘
+                      │
+                ┌─────▼──────┐
+                │ Payroll    │
+                └─────┬──────┘
+                      │
+                ┌─────▼──────┐
+                │ SOAP Client│
+                └────────────┘
 ---
 
 ## API Reference
