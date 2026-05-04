@@ -1,6 +1,6 @@
 blacklisted_tokens = set()
 
-def blacklist_token(jti: str):
+def add_token_to_blacklist(jti: str):
     blacklisted_tokens.add(jti)
 
 def is_blacklisted(jti: str) -> bool:

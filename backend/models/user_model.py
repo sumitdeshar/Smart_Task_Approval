@@ -2,6 +2,7 @@ from datetime import datetime, timezone
 from typing import List, Optional
 from uuid import uuid4
 from enum import Enum
+from sqlalchemy import Column, DateTime
 
 from sqlmodel import Field, SQLModel, Relationship
 
@@ -38,10 +39,14 @@ class User(SQLModel, table=True):
     password: str
     role: RoleName = Field(default=RoleName.EMPLOYEE)
 
-    created_at: datetime = Field(default_factory=utcnow)
+    created_at: datetime = Field(
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
+    )
+
     updated_at: datetime = Field(
         default_factory=utcnow,
-        sa_column_kwargs={"onupdate": utcnow}
+        sa_column=Column(DateTime(timezone=True), onupdate=utcnow)
     )
 
     leaves: List["Leave"] = Relationship(

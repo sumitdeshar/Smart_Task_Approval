@@ -11,7 +11,8 @@ from schemas.user_schema import UserCreate, UserResponseRegister
 
 from utils.hashing import Hash
 from utils.token import token_utils as token
-from utils.token.token_auth import oauth2_scheme, verify_refresh_token
+from utils.token.blacklist_token import is_blacklisted, add_token_to_blacklist
+from utils.token.token_auth import oauth2_scheme, verify_refresh_token, verify_access_token
 
 auth = APIRouter(prefix="/auth", tags=["Authentication"])
     
@@ -113,17 +114,53 @@ async def check_cookie(request: Request):
 @auth.post("/refresh")
 async def refresh(
     response: Response,
-    user_id: int = Depends(verify_refresh_token)
+    payload: dict = Depends(verify_refresh_token),
+    session: AsyncSession = Depends(get_session)
 ):
-    new_access_token = token.create_access_token(data={"sub": user_id})
-    return {"access_token": new_access_token}
+    user_id = payload.get("sub")
+    
+    jti = payload.get("jti")
 
+    if not user_id or not jti:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    res = await session.execute(
+        select(User).where(User.id == user_id)
+    )
+    user = res.scalars().one_or_none()
+
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    add_token_to_blacklist(jti)
+
+    new_access_token = token.create_access_token(
+        data={"sub": str(user.id), "role": user.role}
+    )
+
+    new_refresh_token = token.create_refresh_token(
+        data={"sub": str(user.id)}
+    )
+
+    response.set_cookie(
+        key="refresh_token",
+        value=new_refresh_token,
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=60 * 60 * 24 * 7
+    )
+
+    return {
+        "access_token": new_access_token,
+        "token_type": "bearer",
+    }
 
 @auth.post("/logout")
 async def logout(
     request: LogoutRequest,
     token_str: str = Depends(oauth2_scheme)
 ):
-    user_id = token.verify_token(token_str, credentials_exception= "sad")
+    user_id = verify_access_token(token_str)
     print(user_id)
     return {"msg": "Logged out successfully"}

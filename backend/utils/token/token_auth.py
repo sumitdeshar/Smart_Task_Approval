@@ -4,6 +4,8 @@ from typing import Optional
 from utils.token import token_utils
 from jose import JWTError
 
+from utils.token.blacklist_token import is_blacklisted
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 
@@ -22,8 +24,7 @@ def get_current_user(authorization: Optional[str] = Header(None)):
     return user_id
 
 def verify_access_token(
-    request: Request,
-    token_str: str = Depends(oauth2_scheme)
+    token_str: str
     ):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -34,17 +35,31 @@ def verify_access_token(
     print('user id form token auth:',user_id)
     return user_id
 
-def verify_refresh_token(
-    refresh_token: str = Cookie(None)   # browser sends this automatically
-):
-    if not refresh_token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="No refresh token provided"
-        )
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Invalid or expired refresh token",
-    )
-    user_id = token_utils.verify_token(refresh_token, credentials_exception)
-    return user_id
+# def verify_refresh_token(
+#     refresh_token: str = Cookie(None)   # browser sends this automatically
+# ):
+#     if not refresh_token:
+#         raise HTTPException(
+#             status_code=status.HTTP_401_UNAUTHORIZED,
+#             detail="No refresh token provided"
+#         )
+#     credentials_exception = HTTPException(
+#         status_code=status.HTTP_401_UNAUTHORIZED,
+#         detail="Invalid or expired refresh token",
+#     )
+#     user_id = token_utils.decode_token(refresh_token)
+#     print('refresh token verified')
+#     return user_id
+
+
+def verify_refresh_token(token: str):
+    payload = token_utils.decode_token(token)
+
+    if payload.get("type") != "refresh":
+        raise HTTPException(status_code=401, detail="Invalid token type")
+    
+    jti = payload.get("jti")
+    if jti:
+        if is_blacklisted(jti):
+            raise HTTPException(status_code=401, detail="Token has been revoked")
+    return payload
