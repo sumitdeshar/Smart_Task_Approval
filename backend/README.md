@@ -161,6 +161,30 @@ Example XML:
 
 ## API Reference
 
+## SQLModel tips
+
+# SQLModel internally automatically does scalars().
+
+# So: no scalars are needed
+
+# exec() = execute() + scalars()
+
+# Available Methods:
+
+# scalar() - First row, first column
+
+# scalar_one() - First row, first column, raises if no results
+
+# scalar_one_or_none() - Like scalar_one() but returns None if no results
+
+# first() - Returns first row or None
+
+# one() - Returns single row, raises if 0 or >1 rows
+
+# one_or_none() - Returns single row or None, raises if >1 rows
+
+# all() - Returns all rows as list
+
 ### Auth Routes — `/api/auth`
 
 | Method | Endpoint          | Description                     | Status         |

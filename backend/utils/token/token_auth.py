@@ -1,27 +1,35 @@
-from fastapi import HTTPException, status, Header, Depends, Request, Cookie
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from typing import Optional
-from utils.token import token_utils
-from jose import JWTError
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession 
 
+from configs.db import get_session
+from models.user_model import User
+from utils.token import token_utils
 from utils.token.blacklist_token import is_blacklisted
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
+async def get_current_user(
+    session: AsyncSession = Depends(get_session),
+    token: str = Depends(oauth2_scheme)
+):
+    payload = token_utils.decode_token(token)
 
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
-def get_current_user(authorization: Optional[str] = Header(None)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
+    result = await session.execute(
+        select(User).where(User.id == user_id)
     )
+    user = result.scalar_one_or_none()
 
-    if not authorization or not authorization.startswith("Bearer "):
-        raise credentials_exception
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
 
-    token_str = authorization.split(" ")[1]
-    user_id = token_utils.verify_token(token_str, credentials_exception)
-    return user_id
+    return user
+
 
 def verify_access_token(
     token_str: str
@@ -34,22 +42,6 @@ def verify_access_token(
     user_id = token_utils.verify_token(token_str, credentials_exception)
     print('user id form token auth:',user_id)
     return user_id
-
-# def verify_refresh_token(
-#     refresh_token: str = Cookie(None)   # browser sends this automatically
-# ):
-#     if not refresh_token:
-#         raise HTTPException(
-#             status_code=status.HTTP_401_UNAUTHORIZED,
-#             detail="No refresh token provided"
-#         )
-#     credentials_exception = HTTPException(
-#         status_code=status.HTTP_401_UNAUTHORIZED,
-#         detail="Invalid or expired refresh token",
-#     )
-#     user_id = token_utils.decode_token(refresh_token)
-#     print('refresh token verified')
-#     return user_id
 
 
 def verify_refresh_token(token: str):
