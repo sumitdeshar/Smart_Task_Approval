@@ -8,13 +8,6 @@
 
 ---
 
-## 🔄 In Progress
-
-- [ ] Add role field in User model
-  - Roles: `employee`, `manager`, `admin`
-
----
-
 ## 🛠️ Authentication & Authorization
 
 ### OAuth + JWT Integration
@@ -31,7 +24,7 @@
   - [x] Decode JWT
   - [x] Validate token
   - [x] Check user role
-- [ ] Restrict API access based on roles
+- [x] Restrict API access based on roles
 
 ---
 
@@ -62,21 +55,21 @@
 
 ### User Table
 
-- [ ] id
-- [ ] name
-- [ ] email
-- [ ] role
+- [x] id
+- [x] name
+- [x] email
+- [x] role
 
 ### Leave Table
 
-- [ ] id
-- [ ] employee_id (FK)
-- [ ] leave_type
-- [ ] start_date
-- [ ] end_date
-- [ ] reason
-- [ ] status (pending/approved/rejected)
-- [ ] manager_comment
+- [x] id
+- [x] employee_id (FK)
+- [x] leave_type
+- [x] start_date
+- [x] end_date
+- [x] reason
+- [x] status (pending/approved/rejected)
+- [x] manager_comment
 
 ---
 
@@ -100,8 +93,8 @@
 
 ## 🎯 Final Goals
 
-- [ ] Secure authentication (OAuth + JWT)
-- [ ] Fully working RBAC
+- [x] Secure authentication (OAuth + JWT)
+- [x] Fully working RBAC
 - [ ] Functional leave system
 - [ ] Salary impact calculation
 
@@ -118,10 +111,10 @@
 
 ## 📊 Visual Progress Tracker
 
-| Module             | Status         |
-| ------------------ | -------------- |
-| Auth (OAuth + JWT) | 🔄 In Progress |
-| RBAC               | ⏳ Pending     |
-| Leave System       | ⏳ Pending     |
-| Salary Integration | ⏳ Pending     |
-| Testing            | ⏳ Pending     |
+| Module             | Status       |
+| ------------------ | ------------ |
+| Auth (OAuth + JWT) | ✅ Completed |
+| RBAC               | ✅ Completed |
+| Leave System       | ⏳ Pending   |
+| Salary Integration | ⏳ Pending   |
+| Testing            | ⏳ Pending   |

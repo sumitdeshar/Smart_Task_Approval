@@ -263,16 +263,16 @@ Roles are embedded in the JWT payload at login and enforced by middleware on eve
 
 ## Development Status
 
-| Module                          | Status         |
-| ------------------------------- | -------------- |
-| User registration               | ✅ Complete    |
-| OAuth login + JWT issuance      | ✅ Complete    |
-| Add role field to user model    | 🔄 In Progress |
-| Embed roles in JWT payload      | 📋 Todo        |
-| Role-based middleware / guards  | 📋 Todo        |
-| Leave application form + API    | 📋 Todo        |
-| Manager approve / revoke leaves | 📋 Todo        |
-| Payroll integration with leaves | 📋 Todo        |
+| Module                          | Status       |
+| ------------------------------- | ------------ |
+| User registration               | ✅ Complete  |
+| OAuth login + JWT issuance      | ✅ Complete  |
+| Add role field to user model    | ✅ Completed |
+| Embed roles in JWT payload      | ✅ Completed |
+| Role-based middleware / guards  | ✅ Completed |
+| Leave application form + API    | 📋 Todo      |
+| Manager approve / revoke leaves | 📋 Todo      |
+| Payroll integration with leaves | 📋 Todo      |
 
 ---
 
@@ -317,7 +317,7 @@ JWT_EXPIRES_IN=7d
 # OAuth
 OAUTH_CLIENT_ID=your_oauth_client_id
 OAUTH_CLIENT_SECRET=your_oauth_client_secret
-OAUTH_CALLBACK_URL=http://localhost:3000/api/auth/oauth/callback
+OAUTH_CALLBACK_URL=http://localhost:8000/api/auth/oauth/callback
 ```
 
 ---
