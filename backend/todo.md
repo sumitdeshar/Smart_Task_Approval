@@ -1,6 +1,8 @@
-# 🚀 Project TODO: Auth + Leave Management System
+# 🚀 Project TODO: Smart Task Tracking & Discussion Management System
 
-## ✅ Completed
+---
+
+# ✅ Completed
 
 - [x] Register API implemented
 - [x] Basic login setup
@@ -8,15 +10,15 @@
 
 ---
 
-## 🛠️ Authentication & Authorization
+# 🛠️ Authentication & Authorization
 
-### OAuth + JWT Integration
+## OAuth + JWT Integration
 
 - [x] Integrate OAuth flow with backend
 - [x] Verify OAuth JWT token properly
 - [x] Extract user info from OAuth provider
 
-### Role-Based Access Control (RBAC)
+## Role-Based Access Control (RBAC)
 
 - [x] Store user roles in database
 - [x] Generate JWT with role payload
@@ -28,93 +30,263 @@
 
 ---
 
-## 📄 Leave Management System
+# 📌 Task Management System
 
-### Employee Features
+## Task Features
 
-- [ ] Create Leave Application Form
+- [ ] Create Task API
   - Fields:
-    - [ ] Employee ID
-    - [ ] Leave Type
-    - [ ] Start Date
-    - [ ] End Date
-    - [ ] Reason
-- [ ] Submit leave request
-- [ ] Store leave in database
-
-### Manager Features
-
-- [ ] View all leave requests
-- [ ] Approve leave ✅
-- [ ] Reject leave ❌
-- [ ] Add optional comments
+    - [ ] Title
+    - [ ] Description
+    - [ ] Priority
+    - [ ] Deadline
+    - [ ] Status
+- [ ] Store tasks in database
+- [ ] Update task details
+- [ ] Delete tasks
+- [ ] Get single task
+- [ ] Get all tasks
 
 ---
 
-## 🗄️ Database Design
+# 👥 Task Assignment System
 
-### User Table
+## Assignment Features
+
+- [ ] Assign users to tasks
+- [ ] Remove assignments
+- [ ] View assigned users
+- [ ] Get tasks assigned to current user
+
+---
+
+# 💬 Discussion / Comment System
+
+## Task Discussions
+
+- [ ] Add comments to tasks
+- [ ] Edit comments
+- [ ] Delete comments
+- [ ] Fetch task discussions
+- [ ] Mention/tag users inside comments
+
+---
+
+# 🧠 Resolution & Documentation System
+
+## Problem Solving Workflow
+
+- [ ] Add final resolution to task
+- [ ] Add root cause analysis
+- [ ] Store final solution notes
+- [ ] Mark task as resolved
+- [ ] Preserve historical discussions
+
+---
+
+# 📊 Activity Tracking System
+
+## Audit & Activity Logs
+
+- [ ] Store task activity timeline
+- [ ] Log:
+  - [ ] Task creation
+  - [ ] Status changes
+  - [ ] Assignments
+  - [ ] Comments
+  - [ ] Resolutions
+- [ ] Fetch activity history
+
+---
+
+# ⚡ Real-Time Features
+
+## WebSocket Integration
+
+- [ ] Real-time task updates
+- [ ] Real-time comment updates
+- [ ] Assignment notifications
+- [ ] Status update notifications
+
+---
+
+# 🔍 GraphQL API
+
+## Flexible Query Support
+
+- [ ] Setup GraphQL endpoint
+- [ ] Query tasks with nested comments
+- [ ] Query assignments
+- [ ] Query user activities
+
+---
+
+# 🚀 gRPC Internal Services
+
+## Internal Service Communication
+
+- [ ] Auth Service
+- [ ] Task Service
+- [ ] Notification Service
+- [ ] Activity Service
+
+### Internal Flow
+
+- [ ] Verify permissions via Auth Service
+- [ ] Trigger notifications
+- [ ] Store audit logs
+
+---
+
+# 🏛️ SOAP Simulation
+
+## Legacy Protocol Support
+
+- [ ] Simulate SOAP request handling
+- [ ] XML-based task update requests
+- [ ] External system integration demo
+
+---
+
+# 🗄️ Database Design
+
+## User Table
 
 - [x] id
 - [x] name
 - [x] email
+- [x] password
 - [x] role
 
-### Leave Table
+---
+
+## Task Table
 
 - [x] id
-- [x] employee_id (FK)
-- [x] leave_type
-- [x] start_date
-- [x] end_date
-- [x] reason
-- [x] status (pending/approved/rejected)
-- [x] manager_comment
+- [x] title
+- [x] description
+- [x] priority
+- [x] status
+- [x] created_by
+- [x] deadline
 
 ---
 
-## 💰 Salary Integration
+## Task Assignment Table
 
-- [ ] Fetch approved leaves
-- [ ] Calculate leave days
-- [ ] Deduct from salary (if applicable)
-- [ ] Generate salary report
+- [x] id
+- [x] task_id (FK)
+- [x] user_id (FK)
+- [x] assigned_at
 
 ---
 
-## 🧪 Testing
+## Task Comment Table
+
+- [x] id
+- [x] task_id (FK)
+- [x] user_id (FK)
+- [x] message
+- [x] created_at
+
+---
+
+## Task Resolution Table
+
+- [x] id
+- [x] task_id (FK)
+- [x] resolved_by (FK)
+- [x] root_cause
+- [x] solution
+- [x] created_at
+
+---
+
+## Task Activity Table
+
+- [x] id
+- [x] task_id (FK)
+- [x] user_id (FK)
+- [x] action
+- [x] details
+- [x] created_at
+
+---
+
+# 🧪 Testing
+
+## Authentication Tests
 
 - [ ] Test OAuth login flow
 - [ ] Test JWT validation
 - [ ] Test role-based access
-- [ ] Test leave request lifecycle
 
 ---
 
-## 🎯 Final Goals
+## Task System Tests
+
+- [ ] Test task CRUD operations
+- [ ] Test assignments
+- [ ] Test comments/discussions
+- [ ] Test task resolution workflow
+
+---
+
+## Real-Time Tests
+
+- [ ] Test WebSocket updates
+- [ ] Test notification delivery
+
+---
+
+## Integration Tests
+
+- [ ] Test GraphQL queries
+- [ ] Test gRPC communication
+- [ ] Test SOAP simulation
+
+---
+
+# 🎯 Final Goals
 
 - [x] Secure authentication (OAuth + JWT)
 - [x] Fully working RBAC
-- [ ] Functional leave system
-- [ ] Salary impact calculation
+- [ ] Functional task management system
+- [ ] Real-time collaboration
+- [ ] Discussion & documentation workflow
+- [ ] Activity/audit tracking
+- [ ] Multi-protocol API architecture
 
 ---
 
-## 🧠 Notes / Ideas
+# 🧠 Notes / Ideas
 
 - Consider using:
-  - Refresh tokens for better auth handling
-  - Audit logs for leave approval/rejection
-  - Notifications (email or in-app)
+  - Refresh tokens
+  - Redis caching
+  - Background workers
+  - Notification queues
+  - Full-text search
+  - AI-generated summaries
+  - File attachments
+  - Task labels/tags
+  - Team/workspace system
 
 ---
 
-## 📊 Visual Progress Tracker
+# 📊 Visual Progress Tracker
 
-| Module             | Status       |
-| ------------------ | ------------ |
-| Auth (OAuth + JWT) | ✅ Completed |
-| RBAC               | ✅ Completed |
-| Leave System       | ⏳ Pending   |
-| Salary Integration | ⏳ Pending   |
-| Testing            | ⏳ Pending   |
+| Module                 | Status       |
+| ---------------------- | ------------ |
+| Auth (OAuth + JWT)     | ✅ Completed |
+| RBAC                   | ✅ Completed |
+| Task Management        | ⏳ Pending   |
+| Assignment System      | ⏳ Pending   |
+| Discussion System      | ⏳ Pending   |
+| Resolution Tracking    | ⏳ Pending   |
+| Activity Logging       | ⏳ Pending   |
+| WebSocket Features     | ⏳ Pending   |
+| GraphQL Integration    | ⏳ Pending   |
+| gRPC Internal Services | ⏳ Pending   |
+| SOAP Simulation        | ⏳ Pending   |
+| Testing                | ⏳ Pending   |

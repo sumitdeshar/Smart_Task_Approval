@@ -1,15 +1,17 @@
-# 🏢 Leave Management System
+# 🧠 Smart Task Tracking & Discussion Management System
 
-A backend REST API for managing employee leave requests, approvals, and payroll integration — built with role-based access control (RBAC) and JWT authentication.
+A backend REST API for collaborative task management, assignment tracking, problem discussions, and documented solution workflows — built with role-based access control (RBAC), JWT authentication, and multi-protocol API architecture.
 
 ---
 
-## 📋 Table of Contents
+# 📋 Table of Contents
 
 - [Overview](#overview)
+- [Core Idea](#core-idea)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Architecture](#architecture)
+- [Multi-Protocol API Design](#multi-protocol-api-design)
 - [API Reference](#api-reference)
 - [Authentication & Authorization](#authentication--authorization)
 - [Roles & Permissions](#roles--permissions)
@@ -17,123 +19,215 @@ A backend REST API for managing employee leave requests, approvals, and payroll 
 - [Development Status](#development-status)
 - [Getting Started](#getting-started)
 - [Environment Variables](#environment-variables)
+- [Future Improvements](#future-improvements)
 - [Contributing](#contributing)
 
 ---
 
-## Overview
+# Overview
 
-The Leave Management System allows employees to apply for leave through a structured workflow. Managers can approve or revoke those requests, and the leave records are factored into payroll calculations. The system uses OAuth 2.0 with JWT tokens and enforces role-based access at every API boundary.
+The Smart Task Tracking & Discussion Management System is designed to help teams collaboratively manage tasks, investigate problems, document discussions, assign responsibilities, and preserve final solutions for future reference.
 
----
+Unlike traditional task managers that only track completion status, this platform focuses heavily on:
 
-## Features
+- Problem-solving workflows
+- Task discussions
+- Decision history
+- Assignment tracking
+- Solution documentation
+- Team collaboration
+- Activity auditing
 
-- ✅ User registration and OAuth-based login
-- 🔐 JWT verification and authorization middleware
-- 👥 Role-based access control (Employee, Manager, Admin)
-- 📝 Leave application submission by employees
-- ✔️ Leave approval / revocation by managers
-- 💰 Leave data integration with payroll processing
-- 🗄️ Persistent storage of leave records with employee association
-
----
-
-## Tech Stack
-
-> _(Update this section to match your actual stack)_
-
-| Layer     | Technology      |
-| --------- | --------------- |
-| Runtime   | Python          |
-| Framework | FastAPI         |
-| Auth      | OAuth 2.0 + JWT |
-| Database  | PostgreSQL      |
-| ORM       | SQLAlchemy      |
-| Testing   | Pytest          |
+The system supports multiple API paradigms including REST, GraphQL, WebSocket, gRPC, and SOAP simulation for learning distributed backend architecture.
 
 ---
 
-## Architecture
+# Core Idea
 
+This project is centered around:
+
+```text
+Tasks → Discussions → Collaboration → Resolution → Documentation
 ```
+
+Every task can contain:
+
+- Multiple assigned users
+- Real-time discussions
+- Status updates
+- Activity logs
+- Final resolutions
+- Root cause analysis
+- Historical records
+
+The platform acts as both:
+
+- a task management system
+- and a knowledge/documentation system
+
+---
+
+# Features
+
+- ✅ User registration and JWT authentication
+- 🔐 OAuth 2.0 + JWT authorization middleware
+- 👥 Role-based access control (RBAC)
+- 📝 Task creation and assignment
+- 📌 Task status and priority management
+- 💬 Task-specific discussions and comments
+- 📚 Final solution and resolution documentation
+- 📊 Activity tracking and audit logging
+- ⚡ Real-time updates using WebSockets
+- 🔍 Flexible GraphQL querying
+- 🚀 Internal service communication with gRPC
+- 🏛️ SOAP simulation for legacy integrations
+- 🗄️ Persistent PostgreSQL storage
+
+---
+
+# Tech Stack
+
+> _(Update according to your actual implementation)_
+
+| Layer           | Technology            |
+| --------------- | --------------------- |
+| Runtime         | Python                |
+| Framework       | FastAPI               |
+| Authentication  | OAuth 2.0 + JWT       |
+| Database        | PostgreSQL            |
+| ORM             | SQLModel / SQLAlchemy |
+| Validation      | Pydantic              |
+| Realtime        | WebSocket             |
+| API Query Layer | GraphQL               |
+| Internal RPC    | gRPC                  |
+| Legacy Protocol | SOAP Simulation       |
+| Testing         | Pytest                |
+
+---
+
+# Architecture
+
+```text
 ┌─────────────┐     OAuth / JWT      ┌──────────────────┐
 │   Client    │ ──────────────────►  │   Auth Middleware │
 └─────────────┘                      └────────┬─────────┘
                                               │ Role Check
                                      ┌────────▼─────────┐
                                      │   Route Handlers  │
-                                     │  /auth  /leaves   │
-                                     │  /users /payroll  │
+                                     │ /auth /tasks      │
+                                     │ /users /comments  │
                                      └────────┬─────────┘
                                               │
                                      ┌────────▼─────────┐
                                      │    Database       │
-                                     │  Users | Leaves   │
+                                     │ Users | Tasks     │
+                                     │ Comments          │
                                      └──────────────────┘
 ```
 
-Multi-Protocol API Design (Learning Extension)
-🧩 API Paradigms Used
-Type Purpose Use Case
-REST CRUD operations Users, Leaves, Payroll
-WebSocket Real-time updates Notifications, status updates
-GraphQL Flexible queries Dashboard, aggregated data
-gRPC Internal communication Service-to-service calls
-SOAP Legacy simulation External HR integration
-⚡ WebSocket (Real-Time)
-Notify employee when leave is approved/revoked
-Notify manager of new leave request
-Optional chat system
+---
+
+# Multi-Protocol API Design
+
+# 🧩 API Paradigms Used
+
+| Type      | Purpose                | Use Case                        |
+| --------- | ---------------------- | ------------------------------- |
+| REST      | CRUD operations        | Tasks, Users, Comments          |
+| WebSocket | Real-time updates      | Notifications, live discussions |
+| GraphQL   | Flexible querying      | Dashboards, analytics           |
+| gRPC      | Internal communication | Auth & task services            |
+| SOAP      | Legacy simulation      | Enterprise integrations         |
+
+---
+
+# ⚡ WebSocket (Real-Time)
+
+Used for:
+
+- Real-time task updates
+- New discussion notifications
+- Assignment alerts
+- Status changes
+- Live collaboration
 
 Example:
 
+```json
 {
-"event": "LEAVE_APPROVED",
-"data": {
-"leaveId": "123",
-"status": "APPROVED"
+  "event": "TASK_UPDATED",
+  "data": {
+    "taskId": "123",
+    "status": "IN_PROGRESS"
+  }
 }
-}
-🔍 GraphQL API
+```
+
+---
+
+# 🔍 GraphQL API
 
 Endpoint:
 
+```text
 /api/graphql
+```
 
 Example:
 
+```graphql
 query {
-user {
-name
-role
-leaves {
-status
-startDate
-endDate
+  task(id: "123") {
+    title
+    status
+    comments {
+      message
+      user {
+        name
+      }
+    }
+  }
 }
-}
-}
-🚀 gRPC (Internal Services)
-Auth Service → JWT validation
-Leave Service → business logic
-Payroll Service → salary calculation
+```
+
+---
+
+# 🚀 gRPC (Internal Services)
+
+Services:
+
+- Auth Service
+- Task Service
+- Notification Service
+- Activity Service
 
 Flow:
 
-Leave Service → Auth Service (verify role)
-Leave Service → Payroll Service (update salary)
-🏛️ SOAP (Legacy Simulation)
+```text
+Task Service → Auth Service (verify permissions)
+Task Service → Notification Service (broadcast update)
+Task Service → Activity Service (store logs)
+```
+
+---
+
+# 🏛️ SOAP (Legacy Simulation)
 
 Example XML:
 
-<LeaveRequest>
-  <EmployeeId>123</EmployeeId>
-  <StartDate>2026-05-01</StartDate>
-  <EndDate>2026-05-05</EndDate>
-  <Status>APPROVED</Status>
-</LeaveRequest>
-🏗️ Extended Architecture
+```xml
+<TaskUpdate>
+  <TaskId>123</TaskId>
+  <Status>RESOLVED</Status>
+  <ResolvedBy>User_001</ResolvedBy>
+</TaskUpdate>
+```
+
+---
+
+# 🏗️ Extended Architecture
+
+```text
                 ┌─────────────┐
                 │   Client    │
                 └──────┬──────┘
@@ -145,198 +239,302 @@ Example XML:
         └──────┬───────┴───────┬──────┘
                │               │
         ┌──────▼──────┐  ┌─────▼──────┐
-        │Leave Service│  │Auth Service│
+        │Task Service │  │Auth Service│
         └──────┬──────┘  └─────┬──────┘
                │               │
                └──────┬────────┘
                       │
                 ┌─────▼──────┐
-                │ Payroll    │
+                │Activity Log│
                 └─────┬──────┘
                       │
                 ┌─────▼──────┐
                 │ SOAP Client│
                 └────────────┘
+```
+
 ---
 
-## API Reference
+# API Reference
 
-## SQLModel tips
+# SQLModel Tips
 
-# SQLModel internally automatically does scalars().
-
-# So: no scalars are needed
+```python
+# SQLModel internally automatically does scalars()
 
 # exec() = execute() + scalars()
 
-# Available Methods:
+# Common Methods:
 
-# scalar() - First row, first column
+scalar()
+scalar_one()
+scalar_one_or_none()
 
-# scalar_one() - First row, first column, raises if no results
+first()
+one()
+one_or_none()
 
-# scalar_one_or_none() - Like scalar_one() but returns None if no results
+all()
+```
 
-# first() - Returns first row or None
+---
 
-# one() - Returns single row, raises if 0 or >1 rows
+# Auth Routes — `/api/auth`
 
-# one_or_none() - Returns single row or None, raises if >1 rows
+| Method | Endpoint          | Description            | Status         |
+| ------ | ----------------- | ---------------------- | -------------- |
+| POST   | `/register`       | Register new user      | ✅ Done        |
+| POST   | `/login`          | Login and get JWT      | ✅ Done        |
+| POST   | `/refresh-token`  | Refresh access token   | 📋 Todo        |
+| GET    | `/oauth/callback` | OAuth callback handler | 🔄 In Progress |
 
-# all() - Returns all rows as list
+---
 
-### Auth Routes — `/api/auth`
-
-| Method | Endpoint          | Description                     | Status         |
-| ------ | ----------------- | ------------------------------- | -------------- |
-| POST   | `/register`       | Register a new user             | ✅ Done        |
-| POST   | `/login`          | OAuth login, returns JWT        | ✅ Done        |
-| GET    | `/oauth/callback` | OAuth provider callback handler | 🔄 In Progress |
-
-### User Routes — `/api/users`
+# User Routes — `/api/users`
 
 | Method | Endpoint | Description                 | Status  |
 | ------ | -------- | --------------------------- | ------- |
 | GET    | `/me`    | Get current user profile    | 📋 Todo |
 | PATCH  | `/me`    | Update current user profile | 📋 Todo |
-
-### Leave Routes — `/api/leaves`
-
-| Method | Endpoint       | Description                                | Status  |
-| ------ | -------------- | ------------------------------------------ | ------- |
-| POST   | `/`            | Employee submits a leave application       | 📋 Todo |
-| GET    | `/`            | Get all leaves (manager) or own (employee) | 📋 Todo |
-| GET    | `/:id`         | Get a specific leave by ID                 | 📋 Todo |
-| PATCH  | `/:id/approve` | Manager approves a leave request           | 📋 Todo |
-| PATCH  | `/:id/revoke`  | Manager revokes a leave request            | 📋 Todo |
-
-### Payroll Routes — `/api/payroll`
-
-| Method | Endpoint       | Description                             | Status  |
-| ------ | -------------- | --------------------------------------- | ------- |
-| GET    | `/:employeeId` | Get payroll summary factoring in leaves | 📋 Todo |
+| GET    | `/`      | Get all users               | 📋 Todo |
 
 ---
 
-## Authentication & Authorization
+# Task Routes — `/api/tasks`
 
-This system uses **OAuth 2.0** for authentication and **JWT** for stateless session management.
+| Method | Endpoint        | Description          | Status  |
+| ------ | --------------- | -------------------- | ------- |
+| POST   | `/`             | Create new task      | 📋 Todo |
+| GET    | `/`             | Get tasks            | 📋 Todo |
+| GET    | `/:id`          | Get specific task    | 📋 Todo |
+| PATCH  | `/:id`          | Update task          | 📋 Todo |
+| DELETE | `/:id`          | Delete task          | 📋 Todo |
+| PATCH  | `/:id/status`   | Update task status   | 📋 Todo |
+| PATCH  | `/:id/assign`   | Assign users to task | 📋 Todo |
+| PATCH  | `/:id/unassign` | Remove assignment    | 📋 Todo |
 
-**Login Flow:**
+---
 
+# Discussion Routes — `/api/comments`
+
+| Method | Endpoint        | Description                 | Status  |
+| ------ | --------------- | --------------------------- | ------- |
+| POST   | `/task/:taskId` | Add task discussion/comment | 📋 Todo |
+| GET    | `/task/:taskId` | Get all discussions         | 📋 Todo |
+| PATCH  | `/:commentId`   | Edit comment                | 📋 Todo |
+| DELETE | `/:commentId`   | Delete comment              | 📋 Todo |
+
+---
+
+# Resolution Routes — `/api/resolutions`
+
+| Method | Endpoint        | Description          | Status  |
+| ------ | --------------- | -------------------- | ------- |
+| POST   | `/task/:taskId` | Add final resolution | 📋 Todo |
+| GET    | `/task/:taskId` | Get task resolutions | 📋 Todo |
+
+---
+
+# Activity Routes — `/api/activity`
+
+| Method | Endpoint        | Description                | Status  |
+| ------ | --------------- | -------------------------- | ------- |
+| GET    | `/task/:taskId` | Get task activity timeline | 📋 Todo |
+
+---
+
+# Authentication & Authorization
+
+This system uses:
+
+- OAuth 2.0
+- JWT Authentication
+- Role-Based Access Control (RBAC)
+
+---
+
+# Login Flow
+
+```text
+1. User authenticates
+2. Server validates credentials
+3. JWT is generated
+4. Client stores JWT
+5. JWT sent in Authorization header
+6. Middleware validates token
+7. Request proceeds with attached user context
 ```
-1. User initiates OAuth login
-2. OAuth provider authenticates the user
-3. Server verifies the OAuth token
-4. Server issues a signed JWT containing { userId, role }
-5. Client sends JWT in Authorization header on every subsequent request
-6. Auth middleware validates JWT and attaches user context to the request
-```
 
-**Using the token:**
+---
+
+# Using the Token
 
 ```http
-GET /api/leaves
+GET /api/tasks
 Authorization: Bearer <your_jwt_token>
 ```
 
 ---
 
-## Roles & Permissions
+# Roles & Permissions
 
-| Action                  | Employee | Manager | Admin |
-| ----------------------- | -------- | ------- | ----- |
-| Apply for leave         | ✅       | ✅      | ✅    |
-| View own leaves         | ✅       | ✅      | ✅    |
-| View all leaves         | ❌       | ✅      | ✅    |
-| Approve / revoke leaves | ❌       | ✅      | ✅    |
-| View payroll data       | ❌       | ✅      | ✅    |
-| Manage users            | ❌       | ❌      | ✅    |
+| Action              | User | Manager | Admin |
+| ------------------- | ---- | ------- | ----- |
+| Create tasks        | ✅   | ✅      | ✅    |
+| Comment on tasks    | ✅   | ✅      | ✅    |
+| View assigned tasks | ✅   | ✅      | ✅    |
+| Assign users        | ❌   | ✅      | ✅    |
+| Resolve tasks       | ✅   | ✅      | ✅    |
+| View activity logs  | ❌   | ✅      | ✅    |
+| Manage users        | ❌   | ❌      | ✅    |
 
-Roles are embedded in the JWT payload at login and enforced by middleware on every protected route.
-
----
-
-## Database Schema
-
-### `users`
-
-| Field     | Type      | Notes                          |
-| --------- | --------- | ------------------------------ |
-| id        | UUID      | Primary key                    |
-| name      | String    |                                |
-| email     | String    | Unique                         |
-| role      | Enum      | `EMPLOYEE`, `MANAGER`, `ADMIN` |
-| oauthId   | String    | From OAuth provider            |
-| createdAt | Timestamp |                                |
-
-### `leaves`
-
-| Field      | Type      | Notes                                        |
-| ---------- | --------- | -------------------------------------------- |
-| id         | UUID      | Primary key                                  |
-| employeeId | UUID      | Foreign key → `users.id`                     |
-| startDate  | Date      |                                              |
-| endDate    | Date      |                                              |
-| reason     | String    |                                              |
-| status     | Enum      | `PENDING`, `APPROVED`, `REVOKED`             |
-| reviewedBy | UUID      | Foreign key → `users.id` (manager), nullable |
-| createdAt  | Timestamp |                                              |
+Roles are embedded in JWT payloads and validated through middleware.
 
 ---
 
-## Development Status
+# Database Schema
 
-| Module                          | Status       |
-| ------------------------------- | ------------ |
-| User registration               | ✅ Complete  |
-| OAuth login + JWT issuance      | ✅ Complete  |
-| Add role field to user model    | ✅ Completed |
-| Embed roles in JWT payload      | ✅ Completed |
-| Role-based middleware / guards  | ✅ Completed |
-| Leave application form + API    | 📋 Todo      |
-| Manager approve / revoke leaves | 📋 Todo      |
-| Payroll integration with leaves | 📋 Todo      |
+# `users`
+
+| Field     | Type      | Notes                  |
+| --------- | --------- | ---------------------- |
+| id        | UUID      | Primary key            |
+| name      | String    |                        |
+| email     | String    | Unique                 |
+| password  | String    | Hashed password        |
+| role      | Enum      | USER / MANAGER / ADMIN |
+| createdAt | Timestamp |                        |
 
 ---
 
-## Getting Started
+# `tasks`
+
+| Field       | Type      | Notes                   |
+| ----------- | --------- | ----------------------- |
+| id          | UUID      | Primary key             |
+| title       | String    |                         |
+| description | Text      | Nullable                |
+| status      | Enum      | OPEN / IN_PROGRESS etc. |
+| priority    | Enum      | LOW / MEDIUM / HIGH     |
+| createdBy   | UUID      | FK → users.id           |
+| deadline    | Timestamp | Nullable                |
+| createdAt   | Timestamp |                         |
+
+---
+
+# `task_assignments`
+
+| Field      | Type      | Notes         |
+| ---------- | --------- | ------------- |
+| id         | UUID      | Primary key   |
+| taskId     | UUID      | FK → tasks.id |
+| userId     | UUID      | FK → users.id |
+| assignedAt | Timestamp |               |
+
+---
+
+# `task_comments`
+
+| Field     | Type      | Notes         |
+| --------- | --------- | ------------- |
+| id        | UUID      | Primary key   |
+| taskId    | UUID      | FK → tasks.id |
+| userId    | UUID      | FK → users.id |
+| message   | Text      |               |
+| createdAt | Timestamp |               |
+
+---
+
+# `task_resolutions`
+
+| Field      | Type      | Notes         |
+| ---------- | --------- | ------------- |
+| id         | UUID      | Primary key   |
+| taskId     | UUID      | FK → tasks.id |
+| resolvedBy | UUID      | FK → users.id |
+| rootCause  | Text      | Nullable      |
+| solution   | Text      | Nullable      |
+| createdAt  | Timestamp |               |
+
+---
+
+# `task_activity`
+
+| Field     | Type      | Notes         |
+| --------- | --------- | ------------- |
+| id        | UUID      | Primary key   |
+| taskId    | UUID      | FK → tasks.id |
+| userId    | UUID      | FK → users.id |
+| action    | String    |               |
+| details   | Text      | Nullable      |
+| createdAt | Timestamp |               |
+
+---
+
+# Development Status
+
+| Module                      | Status      |
+| --------------------------- | ----------- |
+| User registration           | ✅ Complete |
+| JWT authentication          | ✅ Complete |
+| RBAC authorization          | ✅ Complete |
+| Task CRUD APIs              | 📋 Todo     |
+| Task assignment system      | 📋 Todo     |
+| Discussion/comment system   | 📋 Todo     |
+| Resolution tracking         | 📋 Todo     |
+| WebSocket notifications     | 📋 Todo     |
+| GraphQL integration         | 📋 Todo     |
+| gRPC internal communication | 📋 Todo     |
+| SOAP integration simulation | 📋 Todo     |
+
+---
+
+# Getting Started
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/leave-management-system.git
-cd leave-management-system
+# 1. Clone repository
+git clone https://github.com/your-org/smart-task-system.git
 
-# 2. Install dependencies
-npm install
+# 2. Move into project
+cd smart-task-system
 
-# 3. Set up environment variables
+# 3. Create virtual environment
+python -m venv venv
+
+# 4. Activate virtual environment
+source venv/bin/activate
+
+# Windows
+venv\Scripts\activate
+
+# 5. Install dependencies
+pip install -r requirements.txt
+
+# 6. Setup environment variables
 cp .env.example .env
 
-# 4. Run database migrations
-npm run migrate
+# 7. Run migrations
+alembic upgrade head
 
-# 5. Start the development server
-npm run dev
+# 8. Start development server
+uvicorn main:app --reload
 ```
 
 ---
 
-## Environment Variables
-
-Create a `.env` file in the root directory:
+# Environment Variables
 
 ```env
 # Server
-PORT=3000
-NODE_ENV=development
+PORT=8000
+ENV=development
 
 # Database
-DATABASE_URL=postgresql://user:password@localhost:5432/leave_db
+DATABASE_URL=postgresql://user:password@localhost:5432/task_db
 
 # JWT
-JWT_SECRET=your_super_secret_key
-JWT_EXPIRES_IN=7d
+JWT_SECRET=your_secret_key
+JWT_EXPIRE_MINUTES=30
 
 # OAuth
 OAUTH_CLIENT_ID=your_oauth_client_id
@@ -346,15 +544,46 @@ OAUTH_CALLBACK_URL=http://localhost:8000/api/auth/oauth/callback
 
 ---
 
-## Contributing
+# Future Improvements
 
-1. Create a feature branch: `git checkout -b feature/your-feature-name`
-2. Commit your changes: `git commit -m "feat: add leave approval endpoint"`
-3. Push to the branch: `git push origin feature/your-feature-name`
-4. Open a Pull Request against `main`
-
-Follow [Conventional Commits](https://www.conventionalcommits.org/) for commit messages.
+- File uploads & attachments
+- Mention/tag system
+- Email notifications
+- Search indexing
+- Team/workspace support
+- Kanban board UI
+- AI-generated task summaries
+- Automatic issue categorization
+- Task dependency graph
+- Full audit dashboard
 
 ---
 
-> **Note:** This project is under active development. APIs marked 📋 Todo are subject to change before release.
+# Contributing
+
+1. Create feature branch
+
+```bash
+git checkout -b feature/your-feature
+```
+
+2. Commit changes
+
+```bash
+git commit -m "feat: add task assignment system"
+```
+
+3. Push branch
+
+```bash
+git push origin feature/your-feature
+```
+
+4. Open Pull Request
+
+Follow Conventional Commits specification.
+
+---
+
+> Note:
+> This project is under active development and architecture may evolve as additional collaboration and workflow features are implemented.
