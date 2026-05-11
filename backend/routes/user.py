@@ -4,10 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from configs.db import get_session
-from models.user_model import RoleName, User
+from models.models import User, UserRole
 from schemas.user_schema import UserUpdate
-from utils.roles import require_roles
-from utils.token.token_auth import get_current_user, oauth2_scheme
+from utils.roles_dependencies import (
+    AdminOnly,
+    AdminOrManager,
+    SelfOrAdmin
+)
 
 user_router = APIRouter()
 
@@ -20,7 +23,8 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 @user_router.get("/users/{user_id}")
 async def get_user(
     user_id: str,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(SelfOrAdmin),
+    
     session: AsyncSession = Depends(get_session)
 ):
     result = await session.execute(
@@ -30,11 +34,6 @@ async def get_user(
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-
-    # 🔐 Allow admin/manager OR self
-    if current_user.role not in [RoleName.ADMIN, RoleName.MANAGER]:
-        if current_user.id != user_id:
-            raise HTTPException(status_code=403, detail="Not authorized")
 
     return user
 
@@ -42,7 +41,7 @@ async def get_user(
 async def update_user(
     user_id: str,
     request: UserUpdate,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(SelfOrAdmin),
     session: AsyncSession = Depends(get_session)
 ):
     result = await session.execute(
@@ -53,22 +52,6 @@ async def update_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # 🔐 Authorization
-    is_admin_or_manager = current_user.role in [RoleName.ADMIN, RoleName.MANAGER]
-
-    if not is_admin_or_manager and current_user.id != user_id:
-        raise HTTPException(status_code=403, detail="Not authorized")
-
-    # 🔐 Restrict role change (only admin can change roles)
-    if request.role is not None:
-        if current_user.role != RoleName.ADMIN:
-            raise HTTPException(
-                status_code=403,
-                detail="Only admin can change roles"
-            )
-        user.role = request.role
-
-    # Update other fields
     if request.name is not None:
         user.name = request.name
 
@@ -83,9 +66,7 @@ async def update_user(
 @user_router.delete("/users/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: User = Depends(
-        require_roles([RoleName.ADMIN, RoleName.MANAGER])
-    ),
+    current_user: User = Depends(AdminOrManager),
     session: AsyncSession = Depends(get_session)
 ):
     result = await session.execute(

@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import or_, select
 
 from configs.db import get_session
-from models.user_model import User
+from models.models import User
 from schemas.request_schema import LogoutRequest
 from schemas.user_schema import UserCreate, UserResponseRegister
 

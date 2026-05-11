@@ -1,7 +1,7 @@
 from sqlmodel import SQLModel
 from typing import Optional, List
 
-from models.user_model import RoleName
+from models.models import UserRole
 
 class UserBase(SQLModel):
     email: str
@@ -24,4 +24,4 @@ class UserResponseRegister(UserBase):
 class UserUpdate(SQLModel):
     name: Optional[str] = None
     email: Optional[str] = None
-    role: Optional[RoleName] = None
+    role: Optional[UserRole] = None

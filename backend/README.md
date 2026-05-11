@@ -279,6 +279,24 @@ all()
 
 ---
 
+# For RBAC
+
+We use a concept where a async function is wrapped with another function(not necessarily async) to create a dependency injection to check roles of each user try to call APIs. This done so that it become callable function meaning the inner function is only executed only while called.
+
+# This Pattern Is Called
+
+# Higher-order function
+
+# Dependency factory
+
+# Closure
+
+# The inner function "remembers" allowed_roles.
+
+# That memory behavior is called a closure.
+
+---
+
 # Auth Routes — `/api/auth`
 
 | Method | Endpoint          | Description            | Status         |

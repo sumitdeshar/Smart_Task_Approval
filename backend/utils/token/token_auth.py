@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession 
 
 from configs.db import get_session
-from models.user_model import User
+from models.models import User
 from utils.token import token_utils
 from utils.token.blacklist_token import is_blacklisted
 
@@ -29,6 +29,18 @@ async def get_current_user(
         raise HTTPException(status_code=401, detail="User not found")
 
     return user
+
+async def get_current_user_id(
+    session: AsyncSession = Depends(get_session),
+    token: str = Depends(oauth2_scheme)
+):
+    payload = token_utils.decode_token(token)
+
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+    return user_id
 
 
 def verify_access_token(
