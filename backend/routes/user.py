@@ -12,18 +12,20 @@ from utils.roles_dependencies import (
     SelfOrAdmin
 )
 
-user_router = APIRouter()
+user_router = APIRouter(prefix="", tags=["User"])
 
 @user_router.get("/users")
 async def get_users(session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(User))
     users = result.scalars().all()
+    if not users:
+        raise HTTPException(status_code=404, detail="No users found!")
     return users
 
 @user_router.get("/users/{user_id}")
 async def get_user(
     user_id: str,
-    current_user: User = Depends(SelfOrAdmin),
+    current_user: User = SelfOrAdmin,
     
     session: AsyncSession = Depends(get_session)
 ):
@@ -41,7 +43,7 @@ async def get_user(
 async def update_user(
     user_id: str,
     request: UserUpdate,
-    current_user: User = Depends(SelfOrAdmin),
+    current_user: User = SelfOrAdmin,
     session: AsyncSession = Depends(get_session)
 ):
     result = await session.execute(
@@ -66,7 +68,7 @@ async def update_user(
 @user_router.delete("/users/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: User = Depends(AdminOrManager),
+    current_user: User = AdminOrManager,
     session: AsyncSession = Depends(get_session)
 ):
     result = await session.execute(

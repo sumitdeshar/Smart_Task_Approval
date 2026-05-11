@@ -75,13 +75,17 @@ class User(SQLModel, table=True):
     # Relationships
     created_tasks: List["Task"] = Relationship(
         back_populates="creator",
-        sa_relationship_kwargs={
-            "foreign_keys": "[Task.created_by]"
-        }
+        sa_relationship_kwargs={"foreign_keys": "[Task.created_by]"}
     )
 
-    assignments: List["TaskAssignment"] = Relationship(
-        back_populates="user"
+    assigned_tasks: List["TaskAssignment"] = Relationship(
+        back_populates="assignee",
+        sa_relationship_kwargs={"foreign_keys": "[TaskAssignment.assigned_to]"}
+    )
+
+    created_assignments: List["TaskAssignment"] = Relationship(
+        back_populates="assigner",
+        sa_relationship_kwargs={"foreign_keys": "[TaskAssignment.assigned_by]"}
     )
 
     comments: List["TaskComment"] = Relationship(
@@ -90,6 +94,18 @@ class User(SQLModel, table=True):
 
     resolutions: List["TaskResolution"] = Relationship(
         back_populates="resolver"
+    )
+
+    activities: List["TaskActivity"] = Relationship(
+        back_populates="user"
+    )
+
+    sessions: List["UserSession"] = Relationship(
+        back_populates="user"
+    )
+
+    api_logs: List["APILog"] = Relationship(
+        back_populates="user"
     )
 
 
@@ -131,9 +147,7 @@ class Task(SQLModel, table=True):
     # Relationships
     creator: Optional[User] = Relationship(
         back_populates="created_tasks",
-        sa_relationship_kwargs={
-            "foreign_keys": "[Task.created_by]"
-        }
+        sa_relationship_kwargs={"foreign_keys": "[Task.created_by]"}
     )
 
     assignments: List["TaskAssignment"] = Relationship(
@@ -164,22 +178,17 @@ class TaskAssignment(SQLModel, table=True):
         foreign_key="task.id"
     )
 
-    user_id: str = Field(
+    assigned_to: str = Field(
+        foreign_key="user.id"
+    )
+
+    assigned_by: str = Field(
         foreign_key="user.id"
     )
 
     assigned_at: datetime = Field(
-        default_factory=utcnow
-    )
-
-    assigned_by: Optional[str] = Field(
-        foreign_key="user.id",
-        default=None
-    )
-    
-    assigned_to: Optional[str] = Field(
-        foreign_key="user.id",
-        default=None
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
     # Relationships
@@ -187,11 +196,14 @@ class TaskAssignment(SQLModel, table=True):
         back_populates="assignments"
     )
 
-    user: Optional[User] = Relationship(
-        back_populates="assignments",
-        sa_relationship_kwargs={
-            "foreign_keys": "[TaskAssignment.user_id]"
-        }
+    assignee: Optional[User] = Relationship(
+        back_populates="assigned_tasks",
+        sa_relationship_kwargs={"foreign_keys": "[TaskAssignment.assigned_to]"}
+    )
+
+    assigner: Optional[User] = Relationship(
+        back_populates="created_assignments",
+        sa_relationship_kwargs={"foreign_keys": "[TaskAssignment.assigned_by]"}
     )
 
 
@@ -209,18 +221,21 @@ class TaskComment(SQLModel, table=True):
     user_id: str = Field(
         foreign_key="user.id"
     )
+
     subject: str
     message: str
 
     created_at: datetime = Field(
-        default_factory=utcnow
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
     updated_at: datetime = Field(
         default_factory=utcnow,
-        sa_column_kwargs={
-            "onupdate": utcnow
-        }
+        sa_column=Column(
+            DateTime(timezone=True),
+            onupdate=utcnow
+        )
     )
 
     # Relationships
@@ -255,7 +270,8 @@ class TaskResolution(SQLModel, table=True):
     solution: Optional[str] = None
 
     created_at: datetime = Field(
-        default_factory=utcnow
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
     # Relationships
@@ -264,7 +280,8 @@ class TaskResolution(SQLModel, table=True):
     )
 
     resolver: Optional[User] = Relationship(
-        back_populates="resolutions"
+        back_populates="resolutions",
+        sa_relationship_kwargs={"foreign_keys": "[TaskResolution.resolved_by]"}
     )
 
 
@@ -288,12 +305,18 @@ class TaskActivity(SQLModel, table=True):
     details: Optional[str] = None
 
     created_at: datetime = Field(
-        default_factory=utcnow
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
     # Relationships
     task: Optional[Task] = Relationship(
         back_populates="activities"
+    )
+
+    user: Optional[User] = Relationship(
+        back_populates="activities",
+        sa_relationship_kwargs={"foreign_keys": "[TaskActivity.user_id]"}
     )
 
 
@@ -310,14 +333,23 @@ class UserSession(SQLModel, table=True):
     )
 
     started_at: datetime = Field(
-        default_factory=utcnow
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
-    ended_at: Optional[datetime] = None
+    ended_at: Optional[datetime] = Field(
+        default=None,
+        sa_column=Column(DateTime(timezone=True))
+    )
 
     ip_address: Optional[str] = None
 
     user_agent: Optional[str] = None
+
+    # Relationships
+    user: Optional[User] = Relationship(
+        back_populates="sessions"
+    )
 
     logs: List["APILog"] = Relationship(
         back_populates="session"
@@ -337,6 +369,7 @@ class APILog(SQLModel, table=True):
     )
 
     user_id: Optional[str] = Field(
+        foreign_key="user.id",
         default=None,
         index=True
     )
@@ -348,10 +381,15 @@ class APILog(SQLModel, table=True):
     duration_ms: int
 
     timestamp: datetime = Field(
-        default_factory=utcnow
+        default_factory=utcnow,
+        sa_column=Column(DateTime(timezone=True))
     )
 
     # Relationships
     session: Optional[UserSession] = Relationship(
         back_populates="logs"
+    )
+
+    user: Optional[User] = Relationship(
+        back_populates="api_logs"
     )
