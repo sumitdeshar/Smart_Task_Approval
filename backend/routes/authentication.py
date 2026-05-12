@@ -24,6 +24,7 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
         name=request.name,
         email=request.email,
         password=Hash.bcrypt(request.password),
+        role= request.role,
     )
     
     session.add(new_user)

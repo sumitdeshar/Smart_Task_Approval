@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from configs.db import create_tables
 from routes.user import user_router as user
 from routes.authentication import auth
+from routes.tasks import task_router as task
 # from middleware.api_logger import APILoggerMiddleware
 import os
 
@@ -9,6 +10,7 @@ app = FastAPI()
 
 app.include_router(user)
 app.include_router(auth)
+app.include_router(task)
 
 # app.add_middleware(APILoggerMiddleware)
 

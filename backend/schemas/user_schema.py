@@ -6,6 +6,7 @@ from models.models import UserRole
 class UserBase(SQLModel):
     email: str
     name: str
+    role: Optional[UserRole]
     class Config:
         from_attributes = True
     
@@ -25,3 +26,6 @@ class UserUpdate(SQLModel):
     name: Optional[str] = None
     email: Optional[str] = None
     role: Optional[UserRole] = None
+    
+class UserMakeAdmin(SQLModel):
+        role: Optional[UserRole] = UserRole.USER
