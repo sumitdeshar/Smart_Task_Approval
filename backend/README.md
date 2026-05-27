@@ -303,18 +303,18 @@ We use a concept where a async function is wrapped with another function(not nec
 | ------ | ----------------- | ---------------------- | -------------- |
 | POST   | `/register`       | Register new user      | ✅ Done        |
 | POST   | `/login`          | Login and get JWT      | ✅ Done        |
-| POST   | `/refresh-token`  | Refresh access token   | 📋 Todo        |
+| POST   | `/refresh-token`  | Refresh access token   | ✅ Done        |
 | GET    | `/oauth/callback` | OAuth callback handler | 🔄 In Progress |
 
 ---
 
 # User Routes — `/api/users`
 
-| Method | Endpoint | Description                 | Status  |
-| ------ | -------- | --------------------------- | ------- |
-| GET    | `/me`    | Get current user profile    | 📋 Todo |
-| PATCH  | `/me`    | Update current user profile | 📋 Todo |
-| GET    | `/`      | Get all users               | 📋 Todo |
+| Method | Endpoint           | Description                 | Status  |
+| ------ | ------------------ | --------------------------- | ------- |
+| GET    | `/user/:id`        | Get current user profile    | 📋 Todo |
+| PATCH  | `/update_user/:id` | Update current user profile | 📋 Todo |
+| GET    | `/users`           | Get all users               | 📋 Todo |
 
 ---
 
@@ -322,8 +322,8 @@ We use a concept where a async function is wrapped with another function(not nec
 
 | Method | Endpoint        | Description          | Status  |
 | ------ | --------------- | -------------------- | ------- |
-| POST   | `/`             | Create new task      | 📋 Todo |
-| GET    | `/`             | Get tasks            | 📋 Todo |
+| POST   | `/task/create`  | Create new task      | 📋 Todo |
+| GET    | `/task/get`     | Get tasks            | 📋 Todo |
 | GET    | `/:id`          | Get specific task    | 📋 Todo |
 | PATCH  | `/:id`          | Update task          | 📋 Todo |
 | DELETE | `/:id`          | Delete task          | 📋 Todo |

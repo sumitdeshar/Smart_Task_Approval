@@ -5,7 +5,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlmodel import or_, select
 
 from configs.db import get_session
-from models.models import User
+from models.models import User, UserRole
 from schemas.request_schema import LogoutRequest
 from schemas.user_schema import UserCreate, UserResponseRegister
 
@@ -24,7 +24,7 @@ async def register(request: UserCreate, session: AsyncSession = Depends(get_sess
         name=request.name,
         email=request.email,
         password=Hash.bcrypt(request.password),
-        role= request.role,
+        role=request.role or UserRole.USER
     )
     
     session.add(new_user)

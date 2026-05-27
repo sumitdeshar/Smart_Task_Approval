@@ -6,7 +6,7 @@ from models.models import UserRole
 class UserBase(SQLModel):
     email: str
     name: str
-    role: Optional[UserRole]
+    role: Optional[UserRole] = None
     class Config:
         from_attributes = True
     
