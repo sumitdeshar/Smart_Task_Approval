@@ -6,7 +6,7 @@ from sqlalchemy import select
 from configs.db import get_session
 from models.models import User, UserRole
 from schemas.user_schema import UserUpdate, UserMakeAdmin
-from utils.roles_dependencies import (
+from auth.roles_dependencies import (
     AdminOnly,
     AdminOrManager,
     check_self_or_roles
@@ -26,7 +26,7 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 @user_router.get("/get/{user_id}")
 async def get_user(
     user_id: str,
-    current_user: User = AdminOrManager(),
+    current_user: User = AdminOrManager, # type: ignore
     
     session: AsyncSession = Depends(get_session)
 ):
@@ -44,7 +44,7 @@ async def get_user(
 async def update_user(
     user_id: str,
     request: UserUpdate,
-    current_user: User = AdminOrManager(),
+    current_user: User = AdminOrManager, # type: ignore
     session: AsyncSession = Depends(get_session)
 ):
     data ={}
@@ -71,7 +71,7 @@ async def update_user(
 @user_router.delete("/delete/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: User = AdminOrManager(),
+    current_user: User = AdminOrManager, # type: ignore
     session: AsyncSession = Depends(get_session)
 ):
     data = {}
@@ -99,7 +99,7 @@ async def delete_user(
 async def make_admin(
     user_id: str,
     request: UserUpdate,
-    current_user: User = AdminOnly(),
+    current_user: User = AdminOnly, # type: ignore
     
     session: AsyncSession = Depends(get_session)
 ):

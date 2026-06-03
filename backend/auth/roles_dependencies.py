@@ -4,6 +4,8 @@ from utils.token.token_auth import get_current_user
 
 
 def check_roles(user: User, allowed_roles: list[UserRole]):
+    print('user from check roles', user.role)
+    print('user roles from check roles', allowed_roles)
     if user.role not in allowed_roles:
         raise HTTPException(
             status_code=403,

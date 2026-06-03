@@ -5,9 +5,9 @@ from sqlalchemy import select
 
 from configs.db import get_session
 from models.models import User,Task, UserRole
-from schemas.tasks import TaskBase
+from schemas.tasks import TaskBase, TaskUpdate
 from utils.token.token_auth import get_current_user
-from utils.roles_dependencies import (
+from auth.roles_dependencies import (
     AdminOnly,
     AdminOrManager,
     check_self_or_roles
@@ -75,54 +75,74 @@ async def get_(
 
     return task
 
-# @task_router.put("/update/{user_id}")
-# async def update_user(
-#     user_id: str,
-#     request: UserUpdate,
-#     current_user: User = SelfOrAdmin,
-#     session: AsyncSession = Depends(get_session)
-# ):
-#     data ={}
-#     result = await session.execute(
-#         select(User).where(User.id == user_id) # pyright: ignore[reportArgumentType]
-#     )
-#     user = result.scalars().one_or_none()
+@task_router.put("/update/{task_id}")
+async def update_task(
+    task_id: str,
+    request: TaskUpdate,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(
+        select(Task).where(Task.id == task_id) # type: ignore
+    )
+    task = result.scalars().one_or_none()
 
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
 
-#     if request.name is not None:
-#         user.name = request.name
+    check_self_or_roles(
+        user=current_user,
+        resource_user_id=task.created_by,
+        allowed_roles=[UserRole.ADMIN]
+    )
 
-#     if request.email is not None:
-#         user.email = request.email
+    if request.title is not None:
+        task.title = request.title
 
-#     await session.commit()
-#     await session.refresh(user)
-#     data["msg"] = "User updated successfully"
-#     data["user"] = user
-#     return data
+    if request.description is not None:
+        task.description = request.description
 
-# @task_router.delete("/delete/{user_id}")
-# async def delete_user(
-#     user_id: str,
-#     current_user: User = AdminOrManager,
-#     session: AsyncSession = Depends(get_session)
-# ):
-#     data = {}
-#     result = await session.execute(
-#         select(User).where(User.id == user_id) # pyright: ignore[reportArgumentType]
-#     )
-#     user = result.scalar_one_or_none()
+    if request.status is not None:
+        task.status = request.status
 
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
+    if request.priority is not None:
+        task.priority = request.priority
 
-#     if user.id == current_user.id:
-#         raise HTTPException(status_code=400, detail="Cannot delete yourself")
+    if request.deadline is not None:
+        task.deadline = request.deadline
+        
 
-#     await session.delete(user)
-#     await session.commit()
+    await session.commit()
+    await session.refresh(task)
+
+    return {
+        "msg": "Task updated successfully",
+        "task": task
+    }
+
+@task_router.delete("/delete/{task_id}")
+async def delete_task(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(
+        select(Task).where(Task.id == task_id) # type: ignore
+    )
+    task = result.scalar_one_or_none()
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    check_self_or_roles(
+        user=current_user,
+        resource_user_id=task.created_by,
+        allowed_roles=[UserRole.ADMIN]
+    )
     
-#     data["msg"] = "User deleted successfully"
-#     return data
+    await session.delete(task)
+    await session.commit()
+
+    return {
+        "msg": "Task deleted successfully"
+    }
