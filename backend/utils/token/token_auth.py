@@ -27,7 +27,7 @@ async def get_current_user(
 
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-
+    print('currentuser',user)
     return user
 
 async def get_current_user_id(

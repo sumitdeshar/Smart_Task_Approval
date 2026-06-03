@@ -129,7 +129,18 @@ class Task(SQLModel, table=True):
         foreign_key="user.id"
     )
 
-    deadline: Optional[datetime] = None
+    deadline: Optional[datetime] = Field(
+    default=None,
+    sa_column=Column(DateTime(timezone=True))
+)
+    # With sa_column:
+
+    # deadline: datetime = Field(
+    #     sa_column=Column(DateTime(timezone=True))
+    # )
+
+    # You explicitly tell SQLModel:
+    # Create this column as a timezone-aware datetime.
 
     created_at: datetime = Field(
         default_factory=utcnow,

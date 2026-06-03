@@ -3,81 +3,55 @@ from models.models import UserRole, User
 from utils.token.token_auth import get_current_user
 
 
-# This Pattern Is Called
-# Higher-order function
-# Dependency factory
-# Closure
+def check_roles(user: User, allowed_roles: list[UserRole]):
+    if user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=403,
+            detail="Not enough permissions"
+        )
 
-# The inner function "remembers" allowed_roles.
-
-# That memory behavior is called a closure.
-
-def require_roles(allowed_roles: list[UserRole]):
-    async def role_checker(current_user: User = Depends(get_current_user)):
-        if current_user.role not in allowed_roles:
-            raise HTTPException(
-                status_code=403,
-                detail="Not enough permissions"
-            )
-        return current_user
-    return role_checker
-
-
-def require_self():
-
-    async def checker(
-        user_id: str,
-        current_user: User = Depends(get_current_user)
-    ):
-
-        if str(current_user.id) != user_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Not authorized"
-            )
-
-        return current_user
-
-    return checker
-
-def require_self_or_roles(
+def check_self(user: User, user_id: str):
+    if str(user.id) != user_id:
+        raise HTTPException(
+            status_code=403,
+            detail="Not authorized"
+        )
+        
+def check_self_or_roles(
+    user: User,
+    resource_user_id: str,
     allowed_roles: list[UserRole]
 ):
+    if user.role in allowed_roles:
+        return
 
-    async def checker(
-        user_id: str,
-        current_user: User = Depends(get_current_user)
-    ):
+    if str(user.id) == resource_user_id:
+        return
 
-        if current_user.role in allowed_roles:
-            return current_user
-
-        if str(current_user.id) != user_id:
-            raise HTTPException(
-                status_code=403,
-                detail="Not authorized"
-            )
-
-        return current_user
-
-    return checker
+    raise HTTPException(
+        status_code=403,
+        detail="Not authorized"
+    )
 
 
 # reusable dependencies
-AdminOnly = Depends(
-    require_roles([UserRole.ADMIN])
-)
+def AdminOnly(current_user: User = Depends(get_current_user)):
+    check_roles(current_user, [UserRole.ADMIN])
+    return current_user
 
-AdminOrManager = Depends(
-    require_roles([
-        UserRole.ADMIN,
-        UserRole.MANAGER
-    ])
-)
+def AdminOrManager(current_user: User = Depends(get_current_user)):
+    check_roles(current_user, [UserRole.ADMIN, UserRole.MANAGER])
+    return current_user
 
-SelfOrAdmin = Depends(
-    require_self_or_roles([
-        UserRole.ADMIN
-    ])
-)
+def SelfOrAdmin(user_id: str):
+    def dependency(current_user: User = Depends(get_current_user)):
+        check_self_or_roles(
+            user=current_user,
+            resource_user_id=user_id,
+            allowed_roles=[UserRole.ADMIN]
+        )
+        return current_user
+
+    return dependency
+
 

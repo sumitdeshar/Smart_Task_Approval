@@ -3,8 +3,11 @@ from configs.db import create_tables
 from routes.user import user_router as user
 from routes.authentication import auth
 from routes.tasks import task_router as task
+from configs.logging import  setup_logging
 # from middleware.api_logger import APILoggerMiddleware
 import os
+
+setup_logging()
 
 app = FastAPI()
 

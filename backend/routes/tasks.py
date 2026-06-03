@@ -4,12 +4,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from configs.db import get_session
-from models.models import User,Task
+from models.models import User,Task, UserRole
 from schemas.tasks import TaskBase
+from utils.token.token_auth import get_current_user
 from utils.roles_dependencies import (
     AdminOnly,
     AdminOrManager,
-    SelfOrAdmin
+    check_self_or_roles
 )
 
 task_router = APIRouter(prefix='/task', tags=["Task"])
@@ -17,7 +18,7 @@ task_router = APIRouter(prefix='/task', tags=["Task"])
 @task_router.post("/create")
 async def create_task(
     request: TaskBase,
-    current_user: User = AdminOrManager,
+    current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_session)
 ):
     print(request)
@@ -43,29 +44,36 @@ async def create_task(
     return data
     
 @task_router.get("/get-all-users")
-async def get_users(session: AsyncSession = Depends(get_session)):
+async def get_all_possible_task(session: AsyncSession = Depends(get_session)):
     result = await session.execute(select(Task))
     tasks = result.scalars().all()
     if not tasks:
         raise HTTPException(status_code=404, detail="No tasks found!")
     return tasks
 
-# @task_router.get("/get/{user_id}")
-# async def get_user(
-#     user_id: str,
-#     current_user: User = SelfOrAdmin,
-    
-#     session: AsyncSession = Depends(get_session)
-# ):
-#     result = await session.execute(
-#         select(User).where(User.id == user_id) # pyright: ignore[reportArgumentType]
-#     )
-#     user = result.scalars().one_or_none()
 
-#     if not user:
-#         raise HTTPException(status_code=404, detail="User not found")
 
-#     return user
+@task_router.get("/get/{task_id}")
+async def get_(
+    task_id: str,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_session)
+):
+    result = await session.execute(
+        select(Task).where(Task.id == task_id) # type: ignore
+    )
+    task = result.scalars().one_or_none()
+
+    if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+
+    check_self_or_roles(
+        user=current_user,
+        resource_user_id=task.created_by,
+        allowed_roles=[UserRole.ADMIN]
+    )
+
+    return task
 
 # @task_router.put("/update/{user_id}")
 # async def update_user(

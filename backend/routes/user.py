@@ -9,8 +9,9 @@ from schemas.user_schema import UserUpdate, UserMakeAdmin
 from utils.roles_dependencies import (
     AdminOnly,
     AdminOrManager,
-    SelfOrAdmin
+    check_self_or_roles
 )
+from utils.token.token_auth import get_current_user
 
 user_router = APIRouter(prefix="/user", tags=["User"])
 
@@ -25,7 +26,7 @@ async def get_users(session: AsyncSession = Depends(get_session)):
 @user_router.get("/get/{user_id}")
 async def get_user(
     user_id: str,
-    current_user: User = SelfOrAdmin,
+    current_user: User = AdminOrManager(),
     
     session: AsyncSession = Depends(get_session)
 ):
@@ -43,7 +44,7 @@ async def get_user(
 async def update_user(
     user_id: str,
     request: UserUpdate,
-    current_user: User = SelfOrAdmin,
+    current_user: User = AdminOrManager(),
     session: AsyncSession = Depends(get_session)
 ):
     data ={}
@@ -70,7 +71,7 @@ async def update_user(
 @user_router.delete("/delete/{user_id}")
 async def delete_user(
     user_id: str,
-    current_user: User = AdminOrManager,
+    current_user: User = AdminOrManager(),
     session: AsyncSession = Depends(get_session)
 ):
     data = {}
@@ -81,9 +82,11 @@ async def delete_user(
 
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    
 
-    if user.id == current_user.id:
-        raise HTTPException(status_code=400, detail="Cannot delete yourself")
+
+    # if user.id == current_user.id:
+    #     raise HTTPException(status_code=400, detail="Cannot delete yourself")
 
     await session.delete(user)
     await session.commit()
@@ -96,7 +99,7 @@ async def delete_user(
 async def make_admin(
     user_id: str,
     request: UserUpdate,
-    current_user: User = AdminOnly,
+    current_user: User = AdminOnly(),
     
     session: AsyncSession = Depends(get_session)
 ):
